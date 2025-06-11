@@ -16,7 +16,7 @@ interface DebateRoomProps {
 
 const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(180); // 3 minutes
+  const [timeRemaining, setTimeRemaining] = useState(60); // Changed to 1 minute
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [currentSpeaker, setCurrentSpeaker] = useState<'student' | 'opponent'>('student');
   const [speechText, setSpeechText] = useState('');
@@ -62,7 +62,7 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
     setCurrentSpeaker('student');
     setSpeechText('');
     setAiResponse('');
-    setTimeRemaining(180);
+    setTimeRemaining(60); // Reset to 1 minute
   };
 
   const handleTimerToggle = () => {
@@ -74,7 +74,7 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
   };
 
   const handleTimerReset = () => {
-    setTimeRemaining(180);
+    setTimeRemaining(60); // Reset to 1 minute
   };
 
   return (

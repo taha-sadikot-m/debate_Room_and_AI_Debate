@@ -15,9 +15,10 @@ interface NavigationProps {
   userTokens: number;
   userRole: 'student' | 'teacher';
   onRoleSwitch: (role: 'student' | 'teacher') => void;
+  onGetPremium?: () => void;
 }
 
-const Navigation = ({ userTokens, userRole, onRoleSwitch }: NavigationProps) => {
+const Navigation = ({ userTokens, userRole, onRoleSwitch, onGetPremium }: NavigationProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
@@ -42,6 +43,19 @@ const Navigation = ({ userTokens, userRole, onRoleSwitch }: NavigationProps) => 
               <Trophy className="h-4 w-4 text-yellow-600" />
               <span className="text-sm font-medium text-yellow-700">{userTokens} tokens</span>
             </div>
+
+            {/* Get Premium Button */}
+            {onGetPremium && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onGetPremium}
+                className="gradient-indigo text-white border-none hover:opacity-90"
+              >
+                <Crown className="h-4 w-4 mr-1" />
+                Get Premium
+              </Button>
+            )}
 
             {/* Role Switcher */}
             <div className="flex items-center space-x-2">
