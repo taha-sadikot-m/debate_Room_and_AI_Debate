@@ -8,7 +8,8 @@ import {
   User, 
   Settings,
   LogOut,
-  Crown
+  Crown,
+  Users
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -21,6 +22,10 @@ interface NavigationProps {
 const Navigation = ({ userTokens, userRole, onRoleSwitch, onGetPremium }: NavigationProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  const handleJoinCommunity = () => {
+    window.open('https://discord.gg/symdebate', '_blank');
+  };
+
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,7 +36,7 @@ const Navigation = ({ userTokens, userRole, onRoleSwitch, onGetPremium }: Naviga
               <MessageSquare className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Speak Your Mind</h1>
+              <h1 className="text-xl font-bold text-gray-900">mydebate.ai</h1>
               <p className="text-xs text-gray-500">AI-Powered Debate Platform</p>
             </div>
           </div>
@@ -43,6 +48,17 @@ const Navigation = ({ userTokens, userRole, onRoleSwitch, onGetPremium }: Naviga
               <Trophy className="h-4 w-4 text-yellow-600" />
               <span className="text-sm font-medium text-yellow-700">{userTokens} tokens</span>
             </div>
+
+            {/* Join Community Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleJoinCommunity}
+              className="text-purple-600 border-purple-300 hover:bg-purple-50"
+            >
+              <Users className="h-4 w-4 mr-1" />
+              Join SYM Community
+            </Button>
 
             {/* Get Premium Button */}
             {onGetPremium && (
