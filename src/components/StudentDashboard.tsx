@@ -1,30 +1,26 @@
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Swords, 
-  Users, 
-  Crown, 
+  Play,
   Trophy,
   TrendingUp,
   Clock,
   Target,
-  Zap,
   Star,
-  Award
+  Award,
+  Brain,
+  MessageSquare
 } from 'lucide-react';
 
 interface StudentDashboardProps {
   userTokens: number;
-  onStartDebate: (type: 'ai' | '1v1' | 'mun') => void;
+  onStartDebate: () => void;
 }
 
 const StudentDashboard = ({ userTokens, onStartDebate }: StudentDashboardProps) => {
-  const [selectedDebateType, setSelectedDebateType] = useState<'ai' | '1v1' | 'mun' | null>(null);
-
   const skillProgress = [
     { skill: 'Confidence', level: 75, color: 'bg-blue-500' },
     { skill: 'Clarity', level: 62, color: 'bg-green-500' },
@@ -42,8 +38,8 @@ const StudentDashboard = ({ userTokens, onStartDebate }: StudentDashboardProps) 
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome Back, Debater!</h1>
-        <p className="text-lg text-gray-600">Ready to sharpen your argumentative skills?</p>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome Back, Hari!</h1>
+        <p className="text-lg text-gray-600">Ready to speak your mind and sharpen your debate skills?</p>
       </div>
 
       {/* Quick Stats */}
@@ -105,106 +101,42 @@ const StudentDashboard = ({ userTokens, onStartDebate }: StudentDashboardProps) 
         </Card>
       </div>
 
-      {/* Debate Options */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="card-shadow hover:card-shadow-lg transition-all duration-300 cursor-pointer"
-              onClick={() => onStartDebate('ai')}>
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <div className="gradient-indigo p-3 rounded-lg">
-                <Swords className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Debate vs AI</CardTitle>
-                <CardDescription>Practice with our advanced AI opponent</CardDescription>
-              </div>
+      {/* Start Debate Section */}
+      <Card className="card-shadow-lg border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+        <CardHeader className="text-center">
+          <div className="mx-auto gradient-indigo p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+            <MessageSquare className="h-8 w-8 text-white" />
+          </div>
+          <CardTitle className="text-2xl">Ready to Start Debating?</CardTitle>
+          <CardDescription className="text-base">
+            Choose your topic, select your opponent, and dive into intelligent discussions
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center">
+          <Button 
+            size="lg" 
+            onClick={onStartDebate}
+            className="px-8 py-4 text-lg"
+          >
+            <Play className="h-5 w-5 mr-2" />
+            Start New Debate
+          </Button>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="flex items-center justify-center space-x-2">
+              <Brain className="h-4 w-4 text-indigo-600" />
+              <span>AI-Powered Arguments</span>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Difficulty</span>
-                <Badge variant="secondary">Adaptive</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Duration</span>
-                <span className="text-sm font-medium">10-15 min</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Tokens</span>
-                <span className="text-sm font-medium text-yellow-600">+5-15</span>
-              </div>
-              <Button className="w-full mt-4">Start AI Debate</Button>
+            <div className="flex items-center justify-center space-x-2">
+              <Target className="h-4 w-4 text-indigo-600" />
+              <span>Topic Selection</span>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="card-shadow hover:card-shadow-lg transition-all duration-300 cursor-pointer"
-              onClick={() => onStartDebate('1v1')}>
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <div className="gradient-indigo p-3 rounded-lg">
-                <Users className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">1v1 Debate</CardTitle>
-                <CardDescription>Challenge a peer student</CardDescription>
-              </div>
+            <div className="flex items-center justify-center space-x-2">
+              <Award className="h-4 w-4 text-indigo-600" />
+              <span>Skill Assessment</span>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Players Online</span>
-                <Badge variant="secondary">12 active</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Duration</span>
-                <span className="text-sm font-medium">15-20 min</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Tokens</span>
-                <span className="text-sm font-medium text-yellow-600">+10-25</span>
-              </div>
-              <Button className="w-full mt-4">Find Opponent</Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="card-shadow hover:card-shadow-lg transition-all duration-300 cursor-pointer border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-white"
-              onClick={() => onStartDebate('mun')}>
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <div className="gradient-indigo-dark p-3 rounded-lg">
-                <Crown className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">MUN Arena</CardTitle>
-                <CardDescription>Model United Nations simulation</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Active Sessions</span>
-                <Badge variant="secondary">3 ongoing</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Duration</span>
-                <span className="text-sm font-medium">30-60 min</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Tokens</span>
-                <span className="text-sm font-medium text-yellow-600">+25-50</span>
-              </div>
-              <Button className="w-full mt-4 bg-yellow-600 hover:bg-yellow-700">
-                Enter MUN Arena
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Skills Progress */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
