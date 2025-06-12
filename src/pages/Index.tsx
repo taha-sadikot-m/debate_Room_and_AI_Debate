@@ -8,6 +8,8 @@ import OpponentSelection from '@/components/OpponentSelection';
 import DebateRoom from '@/components/DebateRoom';
 import MunArena from '@/components/MunArena';
 import PricingPage from '@/components/PricingPage';
+import FamousSpeeches from '@/components/FamousSpeeches';
+import ScoresTokens from '@/components/ScoresTokens';
 
 interface Topic {
   id: string;
@@ -25,12 +27,24 @@ interface Topic {
 const Index = () => {
   const [userRole, setUserRole] = useState<'student' | 'teacher'>('student');
   const [userTokens, setUserTokens] = useState(156);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'topics' | 'opponents' | 'debate' | 'mun' | 'pricing'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'topics' | 'opponents' | 'debate' | 'mun' | 'pricing' | 'speeches' | 'scores'>('dashboard');
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [debateType, setDebateType] = useState<'ai' | '1v1' | 'mun'>('ai');
 
   const handleStartDebate = () => {
     setCurrentView('topics');
+  };
+
+  const handleJoinMUN = () => {
+    setCurrentView('mun');
+  };
+
+  const handleViewScores = () => {
+    setCurrentView('scores');
+  };
+
+  const handleLearnSpeeches = () => {
+    setCurrentView('speeches');
   };
 
   const handleTopicSelect = (topic: Topic) => {
@@ -82,6 +96,9 @@ const Index = () => {
           <StudentDashboard 
             userTokens={userTokens} 
             onStartDebate={handleStartDebate}
+            onJoinMUN={handleJoinMUN}
+            onViewScores={handleViewScores}
+            onLearnSpeeches={handleLearnSpeeches}
           />
         )}
         
@@ -118,6 +135,17 @@ const Index = () => {
 
         {currentView === 'pricing' && (
           <PricingPage onBack={handleBackToDashboard} />
+        )}
+
+        {currentView === 'speeches' && (
+          <FamousSpeeches onBack={handleBackToDashboard} />
+        )}
+
+        {currentView === 'scores' && (
+          <ScoresTokens 
+            userTokens={userTokens} 
+            onBack={handleBackToDashboard} 
+          />
         )}
       </main>
     </div>

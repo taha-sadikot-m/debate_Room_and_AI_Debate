@@ -12,26 +12,38 @@ import {
   Star,
   Award,
   Brain,
-  MessageSquare
+  MessageSquare,
+  Mic,
+  GraduationCap,
+  BarChart,
+  BookOpen
 } from 'lucide-react';
 
 interface StudentDashboardProps {
   userTokens: number;
   onStartDebate: () => void;
+  onJoinMUN: () => void;
+  onViewScores: () => void;
+  onLearnSpeeches: () => void;
 }
 
-const StudentDashboard = ({ userTokens, onStartDebate }: StudentDashboardProps) => {
+const StudentDashboard = ({ 
+  userTokens, 
+  onStartDebate,
+  onJoinMUN,
+  onViewScores,
+  onLearnSpeeches 
+}: StudentDashboardProps) => {
   const skillProgress = [
-    { skill: 'Confidence', level: 75, color: 'bg-blue-500' },
-    { skill: 'Clarity', level: 62, color: 'bg-green-500' },
-    { skill: 'Logic', level: 88, color: 'bg-purple-500' },
-    { skill: 'Emotion', level: 45, color: 'bg-red-500' },
+    { skill: 'Id (Instinctive)', level: 75, color: 'bg-red-500', description: 'Aggressive/Impulsive arguments' },
+    { skill: 'Ego (Rational)', level: 88, color: 'bg-blue-500', description: 'Structure & Logic' },
+    { skill: 'Superego (Moral)', level: 62, color: 'bg-green-500', description: 'Ethics & Empathy' },
   ];
 
   const recentDebates = [
-    { topic: 'Climate Change Policy', opponent: 'AI Assistant', result: 'Win', score: 92, tokens: 15 },
-    { topic: 'Space Exploration', opponent: 'Sarah M.', result: 'Loss', score: 78, tokens: 10 },
-    { topic: 'Digital Privacy', opponent: 'AI Assistant', result: 'Win', score: 85, tokens: 12 },
+    { topic: 'Climate Change Policy', opponent: 'AI Assistant', result: 'Win', freudScore: { id: 8, ego: 9, superego: 7 }, tokens: 15 },
+    { topic: 'Space Exploration', opponent: 'Sarah M.', result: 'Loss', freudScore: { id: 6, ego: 8, superego: 8 }, tokens: 10 },
+    { topic: 'Digital Privacy', opponent: 'AI Assistant', result: 'Win', freudScore: { id: 7, ego: 9, superego: 6 }, tokens: 12 },
   ];
 
   return (
@@ -79,8 +91,8 @@ const StudentDashboard = ({ userTokens, onStartDebate }: StudentDashboardProps) 
                 <TrendingUp className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">85%</p>
-                <p className="text-sm text-gray-500">Win Rate</p>
+                <p className="text-2xl font-bold text-gray-900">8.5</p>
+                <p className="text-sm text-gray-500">Avg Freud Score</p>
               </div>
             </div>
           </CardContent>
@@ -93,71 +105,92 @@ const StudentDashboard = ({ userTokens, onStartDebate }: StudentDashboardProps) 
                 <Star className="h-6 w-6 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">87</p>
-                <p className="text-sm text-gray-500">Avg. Score</p>
+                <p className="text-2xl font-bold text-gray-900">12</p>
+                <p className="text-sm text-gray-500">Badges Earned</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Start Debate Section */}
-      <Card className="card-shadow-lg border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
-        <CardHeader className="text-center">
-          <div className="mx-auto gradient-indigo p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-            <MessageSquare className="h-8 w-8 text-white" />
-          </div>
-          <CardTitle className="text-2xl">Ready to Start Debating?</CardTitle>
-          <CardDescription className="text-base">
-            Choose your topic, select your opponent, and dive into intelligent discussions
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-center">
-          <Button 
-            size="lg" 
-            onClick={onStartDebate}
-            className="px-8 py-4 text-lg"
-          >
-            <Play className="h-5 w-5 mr-2" />
-            Start New Debate
-          </Button>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="flex items-center justify-center space-x-2">
-              <Brain className="h-4 w-4 text-indigo-600" />
-              <span>AI-Powered Arguments</span>
+      {/* Main Action Buttons */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="card-shadow-lg border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onStartDebate}>
+          <CardHeader className="text-center">
+            <div className="mx-auto gradient-indigo p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <Mic className="h-8 w-8 text-white" />
             </div>
-            <div className="flex items-center justify-center space-x-2">
-              <Target className="h-4 w-4 text-indigo-600" />
-              <span>Topic Selection</span>
-            </div>
-            <div className="flex items-center justify-center space-x-2">
-              <Award className="h-4 w-4 text-indigo-600" />
-              <span>Skill Assessment</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            <CardTitle className="text-xl">🎤 Start Debate</CardTitle>
+            <CardDescription>
+              AI voice opponent with live speech-to-text
+            </CardDescription>
+          </CardHeader>
+        </Card>
 
-      {/* Skills Progress */}
+        <Card className="card-shadow-lg border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onJoinMUN}>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-purple-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <GraduationCap className="h-8 w-8 text-white" />
+            </div>
+            <CardTitle className="text-xl">🎓 Join MUN Live</CardTitle>
+            <CardDescription>
+              Live Model UN sessions with AI moderator
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card className="card-shadow-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onViewScores}>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-blue-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <BarChart className="h-8 w-8 text-white" />
+            </div>
+            <CardTitle className="text-xl">📊 My Scores & Tokens</CardTitle>
+            <CardDescription>
+              Track your Freud scores and progress
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card className="card-shadow-lg border-2 border-green-200 bg-gradient-to-br from-green-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onLearnSpeeches}>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-green-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <BookOpen className="h-8 w-8 text-white" />
+            </div>
+            <CardTitle className="text-xl">📚 Learn from Famous Speeches</CardTitle>
+            <CardDescription>
+              Practice with Obama, Greta, Dr. Kalam & more
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+
+      {/* Freud Theory Skills Progress */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="card-shadow">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Award className="h-5 w-5 text-purple-600" />
-              <span>Skill Progression</span>
+              <Brain className="h-5 w-5 text-purple-600" />
+              <span>Freud Theory Analysis</span>
             </CardTitle>
-            <CardDescription>Your debate skills development</CardDescription>
+            <CardDescription>Your debate personality based on Freud's theory</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {skillProgress.map((skill, index) => (
               <div key={index} className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-700">{skill.skill}</span>
-                  <span className="text-sm text-gray-500">{skill.level}%</span>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">{skill.skill}</span>
+                    <p className="text-xs text-gray-500">{skill.description}</p>
+                  </div>
+                  <span className="text-sm text-gray-500">{skill.level}/10</span>
                 </div>
-                <Progress value={skill.level} className="h-2" />
+                <Progress value={skill.level * 10} className="h-2" />
               </div>
             ))}
+            <div className="pt-3 border-t border-gray-200">
+              <p className="text-sm font-medium text-gray-700">Latest Summary:</p>
+              <p className="text-sm text-gray-600">"Strong ego and logic, work on empathy and moral arguments"</p>
+            </div>
           </CardContent>
         </Card>
 
@@ -167,26 +200,30 @@ const StudentDashboard = ({ userTokens, onStartDebate }: StudentDashboardProps) 
               <Clock className="h-5 w-5 text-blue-600" />
               <span>Recent Debates</span>
             </CardTitle>
-            <CardDescription>Your latest debate performances</CardDescription>
+            <CardDescription>Your latest debate performances with Freud scores</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {recentDebates.map((debate, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <p className="font-medium text-sm text-gray-900">{debate.topic}</p>
-                  <p className="text-xs text-gray-500">vs {debate.opponent}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge 
-                    variant={debate.result === 'Win' ? 'default' : 'secondary'}
-                    className={debate.result === 'Win' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}
-                  >
-                    {debate.result}
-                  </Badge>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{debate.score}</p>
-                    <p className="text-xs text-yellow-600">+{debate.tokens} tokens</p>
+              <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <p className="font-medium text-sm text-gray-900">{debate.topic}</p>
+                    <p className="text-xs text-gray-500">vs {debate.opponent}</p>
                   </div>
+                  <div className="text-right">
+                    <Badge 
+                      variant={debate.result === 'Win' ? 'default' : 'secondary'}
+                      className={debate.result === 'Win' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}
+                    >
+                      {debate.result}
+                    </Badge>
+                    <p className="text-xs text-yellow-600 mt-1">+{debate.tokens} tokens</p>
+                  </div>
+                </div>
+                <div className="flex space-x-2 mt-2">
+                  <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Id: {debate.freudScore.id}</span>
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Ego: {debate.freudScore.ego}</span>
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Superego: {debate.freudScore.superego}</span>
                 </div>
               </div>
             ))}
