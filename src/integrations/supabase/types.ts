@@ -9,7 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      debate_sessions: {
+        Row: {
+          created_at: string
+          debate_type: string
+          duration_seconds: number | null
+          id: string
+          speech_text: string | null
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          debate_type: string
+          duration_seconds?: number | null
+          id?: string
+          speech_text?: string | null
+          topic: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          debate_type?: string
+          duration_seconds?: number | null
+          id?: string
+          speech_text?: string | null
+          topic?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      freud_feedback: {
+        Row: {
+          analysis_reasoning: string | null
+          created_at: string
+          ego_score: number
+          feedback_text: string | null
+          id: string
+          id_score: number
+          overall_score: number
+          session_id: string
+          superego_score: number
+          user_id: string
+        }
+        Insert: {
+          analysis_reasoning?: string | null
+          created_at?: string
+          ego_score: number
+          feedback_text?: string | null
+          id?: string
+          id_score: number
+          overall_score: number
+          session_id: string
+          superego_score: number
+          user_id: string
+        }
+        Update: {
+          analysis_reasoning?: string | null
+          created_at?: string
+          ego_score?: number
+          feedback_text?: string | null
+          id?: string
+          id_score?: number
+          overall_score?: number
+          session_id?: string
+          superego_score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freud_feedback_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "debate_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
