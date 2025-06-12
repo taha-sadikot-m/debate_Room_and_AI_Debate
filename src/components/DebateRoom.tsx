@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import DebateHeader from './debate/DebateHeader';
 import DebateTimer from './debate/DebateTimer';
 import SpeechInput from './debate/SpeechInput';
-import AIResponse from './debate/AIResponse';
+import AIVoiceResponse from './debate/AIVoiceResponse';
 import RealtimeFeedback from './debate/RealtimeFeedback';
 import DebateTips from './debate/DebateTips';
 import AudioControls from './debate/AudioControls';
@@ -14,6 +14,7 @@ import { Hand, MessageSquare, Square, Trophy, Award, Target } from 'lucide-react
 interface DebateRoomProps {
   debateType: 'ai' | '1v1' | 'mun';
   topic: string;
+  language?: string;
   onExit: () => void;
 }
 
@@ -29,7 +30,7 @@ interface WinnerDeclaration {
   };
 }
 
-const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
+const DebateRoom = ({ debateType, topic, language = 'en', onExit }: DebateRoomProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -50,6 +51,17 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
     superego: 6.2,
     overall: 85
   });
+
+  // Generate AI response in selected language
+  const generateAIResponse = (userSpeech: string) => {
+    const responses: Record<string, string> = {
+      'en': "While renewable energy is important, we must consider the economic transition costs and job displacement in traditional energy sectors. A gradual transition with proper retraining programs would be more practical than rapid implementation...",
+      'hi': "जबकि नवीकरणीय ऊर्जा महत्वपूर्ण है, हमें पारंपरिक ऊर्जा क्षेत्रों में आर्थिक संक्रमण लागत और नौकरी विस्थापन पर विचार करना चाहिए। उचित पुनः प्रशिक्षण कार्यक्रमों के साथ क्रमिक संक्रमण तीव्र कार्यान्वयन से अधिक व्यावहारिक होगा...",
+      'ta': "புதுப்பிக்கத்தக்க ஆற்றல் முக்கியமானது என்றாலும், பாரம்பரிய ஆற்றல் துறைகளில் பொருளாதார மாற்றம் செலவுகள் மற்றும் வேலை இடப்பெயர்ச்சியை நாம் கருத்தில் கொள்ள வேண்டும். சரியான மறுபயிற்சி திட்டங்களுடன் படிப்படியான மாற்றம் விரைவான செயல்படுத்தலை விட மிகவும் நடைமுறையானதாக இருக்கும்..."
+    };
+    
+    return responses[language] || responses['en'];
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -134,8 +146,13 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
     setIsTimerRunning(true);
     // Simulate speech recognition
     setTimeout(() => {
-      setSpeechText("I believe that renewable energy is crucial for our future because it addresses climate change while creating sustainable economic opportunities. The transition to clean energy will create millions of jobs while reducing our carbon footprint...");
-      // Update feedback based on speech
+      const speechTexts: Record<string, string> = {
+        'en': "I believe that renewable energy is crucial for our future because it addresses climate change while creating sustainable economic opportunities. The transition to clean energy will create millions of jobs while reducing our carbon footprint...",
+        'hi': "मेरा मानना है कि नवीकरणीय ऊर्जा हमारे भविष्य के लिए महत्वपूर्ण है क्योंकि यह जलवायु परिवर्तन को संबोधित करती है और साथ ही टिकाऊ आर्थिक अवसर भी बनाती है। स्वच्छ ऊर्जा की ओर संक्रमण लाखों नौकरियां पैदा करेगा...",
+        'ta': "நான் நம்புகிறேன் நவீकரிக்கத்தக்க ஆற்றல் எங்கள் எதிர்காலத்திற்கு முக்கியமானது ஏனென்றால் அது காலநிலை மாற்றத்தை நிவர்த்தி செய்கிறது மற்றும் நிலையான பொருளாதார வாய்ப்புகளை உருவாக்குகிறது. சுத்தமான ஆற்றலுக்கான மாற்றம் மில்லியன் கணக்கான வேலைகளை உருவாக்கும்..."
+      };
+      
+      setSpeechText(speechTexts[language] || speechTexts['en']);
       setFeedback({
         id: 7.8,
         ego: 8.5,
@@ -150,7 +167,7 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
     setIsTimerRunning(false);
     // Generate AI response and show POI option
     setTimeout(() => {
-      setAiResponse("While renewable energy is important, we must consider the economic transition costs and job displacement in traditional energy sectors. A gradual transition with proper retraining programs would be more practical than rapid implementation...");
+      setAiResponse(generateAIResponse(speechText));
       setCurrentSpeaker('opponent');
       setShowPOIOption(true);
     }, 1000);
@@ -320,6 +337,23 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
         onExit={onExit} 
       />
 
+      {/* Language Indicator */}
+      <Card className="card-shadow">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-medium">Debate Language</h3>
+              <p className="text-sm text-gray-500">
+                {language === 'hi' ? 'हिन्दी' : language === 'ta' ? 'தமிழ்' : 'English'}
+              </p>
+            </div>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+              {language.toUpperCase()}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Round Progress Indicator */}
       <Card className="card-shadow">
         <CardContent className="p-4">
@@ -364,8 +398,8 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
             timeRemaining={timeRemaining}
             isTimerRunning={isTimerRunning}
             currentSpeaker={currentSpeaker}
-            onTimerToggle={handleTimerToggle}
-            onTimerReset={handleTimerReset}
+            onTimerToggle={() => setIsTimerRunning(!isTimerRunning)}
+            onTimerReset={() => setTimeRemaining(60)}
           />
 
           <SpeechInput
@@ -444,9 +478,28 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
             </Card>
           )}
 
-          <AIResponse
+          <AIVoiceResponse
             aiResponse={aiResponse}
-            onNextRound={handleNextRound}
+            language={language}
+            onNextRound={() => {
+              const newRoundsCompleted = roundsCompleted + 1;
+              setRoundsCompleted(newRoundsCompleted);
+              
+              if (newRoundsCompleted >= 2) {
+                const winner = generateWinnerDeclaration();
+                setWinnerData(winner);
+                setShowWinnerDeclaration(true);
+              } else {
+                setCurrentSpeaker('student');
+                setSpeechText('');
+                setAiResponse('');
+                setShowPOIOption(false);
+                setPOIRequested(false);
+                setPOIApproved(false);
+                setTimeRemaining(60);
+                setPOITimeRemaining(30);
+              }
+            }}
           />
         </div>
 

@@ -9,6 +9,20 @@ interface LanguageSelectionProps {
 }
 
 const LanguageSelection = ({ onLanguageSelect, onBack }: LanguageSelectionProps) => {
+  const universalLanguages = [
+    { code: 'en', name: 'English', native: 'English' },
+    { code: 'es', name: 'Spanish', native: 'Español' },
+    { code: 'fr', name: 'French', native: 'Français' },
+    { code: 'de', name: 'German', native: 'Deutsch' },
+    { code: 'it', name: 'Italian', native: 'Italiano' },
+    { code: 'pt', name: 'Portuguese', native: 'Português' },
+    { code: 'ru', name: 'Russian', native: 'Русский' },
+    { code: 'ja', name: 'Japanese', native: '日本語' },
+    { code: 'ko', name: 'Korean', native: '한국어' },
+    { code: 'zh', name: 'Chinese', native: '中文' },
+    { code: 'ar', name: 'Arabic', native: 'العربية' },
+  ];
+
   const indianLanguages = [
     { code: 'hi', name: 'Hindi', native: 'हिन्दी' },
     { code: 'bn', name: 'Bengali', native: 'বাংলা' },
@@ -26,8 +40,41 @@ const LanguageSelection = ({ onLanguageSelect, onBack }: LanguageSelectionProps)
     { code: 'sd', name: 'Sindhi', native: 'سنڌي' },
     { code: 'ne', name: 'Nepali', native: 'नेपाली' },
     { code: 'ks', name: 'Kashmiri', native: 'کٲشُر' },
-    { code: 'en', name: 'English', native: 'English' }
   ];
+
+  const renderLanguageSection = (title: string, languages: typeof universalLanguages) => (
+    <div className="mb-8">
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">{title}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {languages.map((language) => (
+          <Card 
+            key={language.code} 
+            className="card-shadow hover:shadow-lg transition-shadow cursor-pointer group"
+            onClick={() => onLanguageSelect(language.code)}
+          >
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center space-x-3">
+                <div className="w-10 h-10 gradient-indigo rounded-lg flex items-center justify-center">
+                  <Globe className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors text-sm">
+                    {language.name}
+                  </h3>
+                  <p className="text-sm text-gray-600">{language.native}</p>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <Button className="w-full" variant="outline" size="sm">
+                Select
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -42,34 +89,8 @@ const LanguageSelection = ({ onLanguageSelect, onBack }: LanguageSelectionProps)
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {indianLanguages.map((language) => (
-          <Card 
-            key={language.code} 
-            className="card-shadow hover:shadow-lg transition-shadow cursor-pointer group"
-            onClick={() => onLanguageSelect(language.code)}
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center space-x-3">
-                <div className="w-12 h-12 gradient-indigo rounded-lg flex items-center justify-center">
-                  <Globe className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                    {language.name}
-                  </h3>
-                  <p className="text-lg text-gray-600">{language.native}</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="outline">
-                Select Language
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {renderLanguageSection("Universal Languages", universalLanguages)}
+      {renderLanguageSection("Indian Languages", indianLanguages)}
     </div>
   );
 };
