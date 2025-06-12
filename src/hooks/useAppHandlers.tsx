@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
 
@@ -60,6 +61,10 @@ export const useAppHandlers = ({
 
   const handleResources = () => {
     setCurrentView('resources');
+  };
+
+  const handleViewTokens = () => {
+    setCurrentView('scores');
   };
 
   const handleDifficultySelect = (difficulty: 'Easy' | 'Medium' | 'Hard', theme: string) => {
@@ -139,12 +144,17 @@ export const useAppHandlers = ({
     setCurrentView('debate');
   };
 
+  const handleDebateLive = () => {
+    setCurrentView('live-debate-selection');
+  };
+
   return {
     handleStartDebate,
     handleJoinMUN,
     handleCreateDebateRoom,
     handleViewEvents,
     handleResources,
+    handleViewTokens,
     handleDifficultySelect,
     handleTopicSelect,
     handleOpponentSelect,
@@ -156,6 +166,7 @@ export const useAppHandlers = ({
     handleProcedureSelect,
     handleBackToDashboard,
     handleBackToCommittees,
-    handleLiveDebateFormatSelect
+    handleLiveDebateFormatSelect,
+    handleDebateLive
   };
 };

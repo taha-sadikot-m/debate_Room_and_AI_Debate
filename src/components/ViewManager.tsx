@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import StudentDashboard from '@/components/StudentDashboard';
 import TeacherDashboard from '@/components/TeacherDashboard';
@@ -45,6 +46,7 @@ interface ViewManagerProps {
     handleCreateDebateRoom: () => void;
     handleViewEvents: () => void;
     handleResources: () => void;
+    handleViewTokens: () => void;
     handleDifficultySelect: (difficulty: 'Easy' | 'Medium' | 'Hard', theme: string) => void;
     handleTopicSelect: (topic: Topic) => void;
     handleOpponentSelect: (type: 'ai' | '1v1' | 'mun') => void;
@@ -82,6 +84,7 @@ const ViewManager = ({
     handleCreateDebateRoom,
     handleViewEvents,
     handleResources,
+    handleViewTokens,
     handleDifficultySelect,
     handleTopicSelect,
     handleOpponentSelect,
@@ -107,6 +110,7 @@ const ViewManager = ({
           onCreateDebateRoom={handleCreateDebateRoom}
           onViewEvents={handleViewEvents}
           onResources={handleResources}
+          onViewTokens={handleViewTokens}
         />
       ) : (
         <TeacherDashboard />

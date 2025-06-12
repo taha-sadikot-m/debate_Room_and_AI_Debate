@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import ViewManager from '@/components/ViewManager';
@@ -67,14 +68,6 @@ const App = () => {
     window.location.reload();
   };
 
-  const handleDebateLive = () => {
-    setCurrentView('live-debate-selection');
-  };
-
-  const handleViewTokens = () => {
-    setCurrentView('tokens');
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation 
@@ -100,7 +93,7 @@ const App = () => {
           selectedProcedureType={selectedProcedureType}
           selectedLanguage={selectedLanguage}
           selectedDebateFormat={selectedDebateFormat}
-          handlers={{...handlers, handleDebateLive, handleViewTokens}}
+          handlers={handlers}
         />
       </main>
     </div>
