@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,10 +40,10 @@ const OpponentSelection = ({ topic, onOpponentSelect, onBack }: OpponentSelectio
 
   const aiOpponents = [
     { 
-      name: 'Socrates AI', 
-      description: 'Philosophical and methodical debater',
+      name: 'Gabbar AI', 
+      description: 'Fierce Indian debater with sharp arguments',
       difficulty: 'Hard',
-      specialty: 'Logic & Ethics'
+      specialty: 'Indian Politics & Society'
     },
     { 
       name: 'Debate Master', 
@@ -114,12 +113,12 @@ const OpponentSelection = ({ topic, onOpponentSelect, onBack }: OpponentSelectio
               onClick={() => onOpponentSelect('ai')}
             >
               <Bot className="h-4 w-4 mr-2" />
-              Start AI Debate
+              Challenge Gabbar
             </Button>
           </CardContent>
         </Card>
 
-        {/* 1v1 Human */}
+        {/* Human Opponent */}
         <Card className="card-shadow hover:card-shadow-lg transition-all duration-300">
           <CardHeader>
             <div className="flex items-center space-x-3">
@@ -168,49 +167,7 @@ const OpponentSelection = ({ topic, onOpponentSelect, onBack }: OpponentSelectio
           </CardContent>
         </Card>
 
-        {/* MUN Arena */}
-        <Card className="card-shadow hover:card-shadow-lg transition-all duration-300 border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-white">
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <div className="gradient-indigo-dark p-3 rounded-lg">
-                <Crown className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">MUN Arena</CardTitle>
-                <CardDescription>Model United Nations</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                <h4 className="font-medium text-sm text-yellow-800 mb-1">Active Sessions</h4>
-                <div className="space-y-1">
-                  <p className="text-xs text-yellow-700">🇺🇳 Climate Summit (5/15 countries)</p>
-                  <p className="text-xs text-yellow-700">🕊️ Peace Resolution (8/12 countries)</p>
-                  <p className="text-xs text-yellow-700">💰 Trade Agreement (3/10 countries)</p>
-                </div>
-              </div>
-            </div>
-            <div className="pt-3 border-t border-gray-200 space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Duration</span>
-                <span className="font-medium">30-60 min</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Tokens</span>
-                <span className="font-medium text-yellow-600">+25-50</span>
-              </div>
-            </div>
-            <Button 
-              className="w-full bg-yellow-600 hover:bg-yellow-700" 
-              onClick={() => onOpponentSelect('mun')}
-            >
-              <Crown className="h-4 w-4 mr-2" />
-              Enter MUN Arena
-            </Button>
-          </CardContent>
-        </Card>
+        {/* MUN Arena - Remove from here since it's now separate */}
       </div>
     </div>
   );

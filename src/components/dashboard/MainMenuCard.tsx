@@ -1,9 +1,11 @@
+
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Users, Settings, Calendar, BookOpen, Zap } from 'lucide-react';
+import { Bot, Users, Settings, Calendar, BookOpen, Zap, Crown } from 'lucide-react';
 
 interface MainMenuCardProps {
   onStartDebate: () => void;
   onDebateLive: () => void;
+  onJoinMUN: () => void;
   onCreateDebateRoom: () => void;
   onViewEvents: () => void;
   onResources: () => void;
@@ -13,6 +15,7 @@ interface MainMenuCardProps {
 const MainMenuCard = ({ 
   onStartDebate, 
   onDebateLive,
+  onJoinMUN,
   onCreateDebateRoom, 
   onViewEvents, 
   onResources,
@@ -20,9 +23,18 @@ const MainMenuCard = ({
 }: MainMenuCardProps) => {
   const menuItems = [
     {
+      icon: Crown,
+      title: '🏛️ MUN Mode',
+      description: 'Model United Nations with Gavel Bro AI moderator',
+      onClick: onJoinMUN,
+      borderColor: 'border-yellow-200',
+      bgGradient: 'from-yellow-50 to-white',
+      iconBg: 'bg-yellow-500'
+    },
+    {
       icon: Bot,
-      title: '🤖 Start Debate',
-      description: 'Debate with AI - Practice with intelligent opponents',
+      title: '🤖 Debate with Gabbar',
+      description: 'Challenge our fierce Indian AI opponent - Gabbar',
       onClick: onStartDebate,
       borderColor: 'border-indigo-200',
       bgGradient: 'from-indigo-50 to-white',

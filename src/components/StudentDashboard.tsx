@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,46 +37,11 @@ const StudentDashboard = ({
         <p className="text-gray-600 mt-2">Enhance your debate skills with AI-powered tools and live competitions</p>
       </div>
 
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="card-shadow">
-          <CardHeader>
-            <CardTitle>Tokens Available</CardTitle>
-            <CardDescription>Your current balance</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-4">
-              <Coins className="h-8 w-8 text-yellow-500" />
-              <span className="text-2xl font-semibold">{userTokens}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="card-shadow">
-          <CardHeader>
-            <CardTitle>Debates Completed</CardTitle>
-            <CardDescription>Total debates you've participated in</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <span className="text-2xl font-semibold">42</span>
-          </CardContent>
-        </Card>
-
-        <Card className="card-shadow">
-          <CardHeader>
-            <CardTitle>Average Score</CardTitle>
-            <CardDescription>Your average score in debates</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <span className="text-2xl font-semibold">86%</span>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Main Menu */}
       <MainMenuCard 
         onStartDebate={onStartDebate}
         onDebateLive={onDebateLive}
+        onJoinMUN={onJoinMUN}
         onCreateDebateRoom={onCreateDebateRoom}
         onViewEvents={onViewEvents}
         onResources={onResources}

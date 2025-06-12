@@ -47,7 +47,7 @@ export const useAppHandlers = ({
   };
 
   const handleJoinMUN = () => {
-    setCurrentView('procedure-selection');
+    setCurrentView('mun-mode');
   };
 
   const handleCreateDebateRoom = () => {
