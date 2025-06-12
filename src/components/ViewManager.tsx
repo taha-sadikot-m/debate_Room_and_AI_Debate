@@ -57,7 +57,6 @@ interface ViewManagerProps {
     handleBackToDashboard: () => void;
     handleBackToCommittees: () => void;
     handleLiveDebateFormatSelect: (format: '1v1' | '3v3', language: string) => void;
-    handleViewTokens: () => void;
   };
 }
 
@@ -94,8 +93,7 @@ const ViewManager = ({
     handleProcedureSelect,
     handleBackToDashboard,
     handleBackToCommittees,
-    handleLiveDebateFormatSelect,
-    handleViewTokens
+    handleLiveDebateFormatSelect
   } = handlers;
 
   switch (currentView) {
@@ -109,7 +107,6 @@ const ViewManager = ({
           onCreateDebateRoom={handleCreateDebateRoom}
           onViewEvents={handleViewEvents}
           onResources={handleResources}
-          onViewTokens={handleViewTokens}
         />
       ) : (
         <TeacherDashboard />
