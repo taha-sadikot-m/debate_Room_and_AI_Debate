@@ -1,6 +1,6 @@
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Users, Settings, Calendar, BookOpen, Zap, Crown } from 'lucide-react';
+import { Bot, Users, Settings, Calendar, BookOpen, Zap, Crown, Globe } from 'lucide-react';
 
 interface MainMenuCardProps {
   onStartDebate: () => void;
@@ -23,67 +23,67 @@ const MainMenuCard = ({
 }: MainMenuCardProps) => {
   const menuItems = [
     {
-      icon: Crown,
-      title: '🏛️ MUN Mode',
+      icon: Zap,
+      title: '⚡ Debate Live',
+      description: 'Live debates with real people in any language',
+      onClick: onDebateLive,
+      borderColor: 'border-indigo-200',
+      bgGradient: 'from-indigo-50 to-white',
+      iconBg: 'bg-indigo-500'
+    },
+    {
+      icon: Globe,
+      title: '🌍 MUN Mode',
       description: 'Model United Nations with Gavel Bro AI moderator',
       onClick: onJoinMUN,
-      borderColor: 'border-yellow-200',
-      bgGradient: 'from-yellow-50 to-white',
-      iconBg: 'bg-yellow-500'
+      borderColor: 'border-indigo-200',
+      bgGradient: 'from-indigo-50 to-white',
+      iconBg: 'bg-indigo-600'
     },
     {
       icon: Bot,
       title: '🤖 Debate with Gabbar',
       description: 'Challenge our fierce Indian AI opponent - Gabbar',
       onClick: onStartDebate,
-      borderColor: 'border-indigo-200',
-      bgGradient: 'from-indigo-50 to-white',
-      iconBg: 'gradient-indigo'
-    },
-    {
-      icon: Zap,
-      title: '⚡ Debate Live',
-      description: 'Live debates with real people in any language',
-      onClick: onDebateLive,
-      borderColor: 'border-green-200',
-      bgGradient: 'from-green-50 to-white',
-      iconBg: 'bg-green-500'
+      borderColor: 'border-gray-200',
+      bgGradient: 'from-gray-50 to-white',
+      iconBg: 'bg-gray-700'
     },
     {
       icon: Settings,
       title: '🏛️ Create Debate Room',
       description: 'Set up custom topics and debate formats',
       onClick: onCreateDebateRoom,
-      borderColor: 'border-purple-200',
-      bgGradient: 'from-purple-50 to-white',
-      iconBg: 'bg-purple-500'
+      borderColor: 'border-indigo-200',
+      bgGradient: 'from-indigo-50 to-white',
+      iconBg: 'bg-indigo-400'
     },
     {
       icon: Calendar,
       title: '🎪 Events',
       description: 'Recent debates, competitions, and tournaments',
       onClick: onViewEvents,
-      borderColor: 'border-orange-200',
-      bgGradient: 'from-orange-50 to-white',
-      iconBg: 'bg-orange-500'
+      borderColor: 'border-indigo-200',
+      bgGradient: 'from-indigo-50 to-white',
+      iconBg: 'bg-indigo-500'
     },
     {
       icon: BookOpen,
       title: '📚 Resources',
       description: 'Rules, techniques, blogs, videos & speech feedback',
       onClick: onResources,
-      borderColor: 'border-blue-200',
-      bgGradient: 'from-blue-50 to-white',
-      iconBg: 'bg-blue-500'
+      borderColor: 'border-indigo-200',
+      bgGradient: 'from-indigo-50 to-white',
+      iconBg: 'bg-indigo-600'
     },
     {
       icon: Users,
       title: '🎭 Public Speaking',
       description: 'Group discussions, JAM, Best Manager & more activities',
       onClick: onPublicSpeaking,
-      borderColor: 'border-pink-200',
-      bgGradient: 'from-pink-50 to-white',
-      iconBg: 'bg-pink-500'
+      borderColor: 'border-indigo-200',
+      bgGradient: 'from-indigo-50 to-white',
+      iconBg: 'bg-indigo-400'
     }
   ];
 
@@ -92,15 +92,15 @@ const MainMenuCard = ({
       {menuItems.map((item, index) => (
         <Card 
           key={index}
-          className={`card-shadow-lg border-2 ${item.borderColor} bg-gradient-to-br ${item.bgGradient} hover:shadow-xl transition-all cursor-pointer`} 
+          className={`card-shadow-lg border-2 ${item.borderColor} bg-gradient-to-br ${item.bgGradient} hover:shadow-xl transition-all cursor-pointer hover:border-indigo-300`} 
           onClick={item.onClick}
         >
           <CardHeader className="text-center">
             <div className={`mx-auto ${item.iconBg} p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4`}>
               <item.icon className="h-8 w-8 text-white" />
             </div>
-            <CardTitle className="text-xl">{item.title}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl text-gray-900">{item.title}</CardTitle>
+            <CardDescription className="text-gray-600">
               {item.description}
             </CardDescription>
           </CardHeader>
