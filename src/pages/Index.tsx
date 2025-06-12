@@ -7,10 +7,12 @@ import DifficultySelection from '@/components/DifficultySelection';
 import TopicSelection from '@/components/TopicSelection';
 import OpponentSelection from '@/components/OpponentSelection';
 import DebateRoom from '@/components/DebateRoom';
+import MunCommitteeSelection from '@/components/MunCommitteeSelection';
 import MunArena from '@/components/MunArena';
 import PricingPage from '@/components/PricingPage';
 import FamousSpeeches from '@/components/FamousSpeeches';
 import ScoresTokens from '@/components/ScoresTokens';
+import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
 
 interface Topic {
   id: string;
@@ -29,10 +31,12 @@ interface Topic {
 const Index = () => {
   const [userRole, setUserRole] = useState<'student' | 'teacher'>('student');
   const [userTokens, setUserTokens] = useState(156);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'difficulty' | 'topics' | 'opponents' | 'debate' | 'mun' | 'pricing' | 'speeches' | 'scores'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'difficulty' | 'topics' | 'opponents' | 'debate' | 'mun-committees' | 'mun' | 'pricing' | 'speeches' | 'scores'>('dashboard');
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Easy');
   const [selectedTheme, setSelectedTheme] = useState<string>('');
+  const [selectedCommittee, setSelectedCommittee] = useState<MunCommittee | null>(null);
+  const [selectedLiveSession, setSelectedLiveSession] = useState<LiveMunSession | null>(null);
   const [debateType, setDebateType] = useState<'ai' | '1v1' | 'mun'>('ai');
 
   const handleStartDebate = () => {
@@ -40,7 +44,7 @@ const Index = () => {
   };
 
   const handleJoinMUN = () => {
-    setCurrentView('mun');
+    setCurrentView('mun-committees');
   };
 
   const handleViewScores = () => {
@@ -65,15 +69,29 @@ const Index = () => {
   const handleOpponentSelect = (type: 'ai' | '1v1' | 'mun') => {
     setDebateType(type);
     if (type === 'mun') {
-      setCurrentView('mun');
+      setCurrentView('mun-committees');
     } else {
       setCurrentView('debate');
     }
   };
 
+  const handleCommitteeSelect = (committee: MunCommittee) => {
+    setSelectedCommittee(committee);
+    setSelectedLiveSession(null);
+    setCurrentView('mun');
+  };
+
+  const handleJoinLiveSession = (session: LiveMunSession) => {
+    setSelectedLiveSession(session);
+    setSelectedCommittee(null);
+    setCurrentView('mun');
+  };
+
   const handleExitDebate = () => {
     setCurrentView('dashboard');
     setSelectedTopic(null);
+    setSelectedCommittee(null);
+    setSelectedLiveSession(null);
     // Award tokens after debate completion
     setUserTokens(prev => prev + Math.floor(Math.random() * 15) + 5);
   };
@@ -91,6 +109,14 @@ const Index = () => {
   const handleBackToDashboard = () => {
     setCurrentView('dashboard');
     setSelectedTopic(null);
+    setSelectedCommittee(null);
+    setSelectedLiveSession(null);
+  };
+
+  const handleBackToCommittees = () => {
+    setCurrentView('mun-committees');
+    setSelectedCommittee(null);
+    setSelectedLiveSession(null);
   };
 
   const handleGetPremium = () => {
@@ -152,9 +178,22 @@ const Index = () => {
             onExit={handleExitDebate}
           />
         )}
+
+        {currentView === 'mun-committees' && (
+          <MunCommitteeSelection
+            onCommitteeSelect={handleCommitteeSelect}
+            onJoinLiveSession={handleJoinLiveSession}
+            onBack={handleBackToDashboard}
+          />
+        )}
         
         {currentView === 'mun' && (
-          <MunArena onExit={handleExitDebate} />
+          <MunArena 
+            committee={selectedCommittee || undefined}
+            liveSession={selectedLiveSession || undefined}
+            onExit={handleExitDebate}
+            onBackToCommittees={handleBackToCommittees}
+          />
         )}
 
         {currentView === 'pricing' && (

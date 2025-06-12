@@ -1,9 +1,7 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Crown, 
   Mic, 
@@ -16,29 +14,52 @@ import {
   AlertTriangle,
   Globe,
   Vote,
-  FileText
+  FileText,
+  ArrowLeft
 } from 'lucide-react';
+import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
 
 interface MunArenaProps {
+  committee?: MunCommittee;
+  liveSession?: LiveMunSession;
   onExit: () => void;
+  onBackToCommittees: () => void;
 }
 
-const MunArena = ({ onExit }: MunArenaProps) => {
+const MunArena = ({ committee, liveSession, onExit, onBackToCommittees }: MunArenaProps) => {
   const [selectedCountry, setSelectedCountry] = useState('United States');
   const [isInSpeakerQueue, setIsInSpeakerQueue] = useState(false);
   const [currentMode, setCurrentMode] = useState<'general' | 'moderated' | 'unmoderated'>('general');
   const [micStatus, setMicStatus] = useState(false);
 
-  const countries = [
-    { name: 'United States', delegate: 'You', status: 'active', avatar: '🇺🇸' },
-    { name: 'United Kingdom', delegate: 'Sarah M.', status: 'speaking', avatar: '🇬🇧' },
-    { name: 'China', delegate: 'Wei L.', status: 'active', avatar: '🇨🇳' },
-    { name: 'Germany', delegate: 'Hans K.', status: 'queued', avatar: '🇩🇪' },
-    { name: 'France', delegate: 'Marie D.', status: 'active', avatar: '🇫🇷' },
-    { name: 'Japan', delegate: 'Akira T.', status: 'active', avatar: '🇯🇵' },
-    { name: 'Brazil', delegate: 'Carlos R.', status: 'inactive', avatar: '🇧🇷' },
-    { name: 'Russia', delegate: 'Dimitri V.', status: 'active', avatar: '🇷🇺' },
-  ];
+  // Update countries based on committee type
+  const getCountriesForCommittee = () => {
+    if (committee?.type === 'indian') {
+      return [
+        { name: 'BJP', delegate: 'You', status: 'active', avatar: '🇮🇳' },
+        { name: 'INC', delegate: 'Rahul G.', status: 'speaking', avatar: '✋' },
+        { name: 'AAP', delegate: 'Arvind K.', status: 'active', avatar: '🧹' },
+        { name: 'TMC', delegate: 'Mamata B.', status: 'queued', avatar: '🌿' },
+        { name: 'DMK', delegate: 'Stalin M.', status: 'active', avatar: '☀️' },
+        { name: 'SP', delegate: 'Akhilesh Y.', status: 'active', avatar: '🚲' },
+        { name: 'BSP', delegate: 'Mayawati', status: 'inactive', avatar: '🐘' },
+        { name: 'BJD', delegate: 'Naveen P.', status: 'active', avatar: '🦌' },
+      ];
+    }
+    
+    return [
+      { name: 'United States', delegate: 'You', status: 'active', avatar: '🇺🇸' },
+      { name: 'United Kingdom', delegate: 'Sarah M.', status: 'speaking', avatar: '🇬🇧' },
+      { name: 'China', delegate: 'Wei L.', status: 'active', avatar: '🇨🇳' },
+      { name: 'Germany', delegate: 'Hans K.', status: 'queued', avatar: '🇩🇪' },
+      { name: 'France', delegate: 'Marie D.', status: 'active', avatar: '🇫🇷' },
+      { name: 'Japan', delegate: 'Akira T.', status: 'active', avatar: '🇯🇵' },
+      { name: 'Brazil', delegate: 'Carlos R.', status: 'inactive', avatar: '🇧🇷' },
+      { name: 'Russia', delegate: 'Dimitri V.', status: 'active', avatar: '🇷🇺' },
+    ];
+  };
+
+  const countries = getCountriesForCommittee();
 
   const speakerQueue = [
     { country: 'United Kingdom', delegate: 'Sarah M.', timeRemaining: 180 },
@@ -46,25 +67,16 @@ const MunArena = ({ onExit }: MunArenaProps) => {
     { country: 'China', delegate: 'Wei L.', timeRemaining: 180 },
   ];
 
-  const resolutions = [
-    { 
-      id: 'A/78/123', 
-      title: 'Climate Change Mitigation Strategies', 
-      status: 'Under Discussion',
-      votes: { favor: 12, against: 3, abstain: 2 }
-    },
-    { 
-      id: 'A/78/124', 
-      title: 'Digital Rights and Privacy Protection', 
-      status: 'Pending',
-      votes: { favor: 0, against: 0, abstain: 0 }
-    }
-  ];
+  const getCurrentAgenda = () => {
+    if (liveSession) return liveSession.agenda;
+    if (committee) return committee.currentAgendas[0];
+    return 'Climate Change Mitigation Strategies';
+  };
 
-  const crisisUpdate = {
-    title: "Breaking: Economic Sanctions Announced",
-    description: "Major economic sanctions have been imposed affecting global trade relations. Delegates must adjust their positions accordingly.",
-    severity: "high"
+  const getCommitteeTitle = () => {
+    if (liveSession) return `${liveSession.committee} Live Session`;
+    if (committee) return `${committee.name} Simulation`;
+    return 'MUN General Assembly';
   };
 
   return (
@@ -76,41 +88,65 @@ const MunArena = ({ onExit }: MunArenaProps) => {
             <Crown className="h-8 w-8 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">MUN General Assembly</h1>
-            <p className="text-gray-600">United Nations Climate Summit Simulation</p>
+            <h1 className="text-2xl font-bold text-gray-900">{getCommitteeTitle()}</h1>
+            <p className="text-gray-600">{getCurrentAgenda()}</p>
+            {committee && (
+              <p className="text-sm text-gray-500">{committee.fullName} • {committee.rulesOfProcedure} Rules</p>
+            )}
           </div>
         </div>
         <div className="flex items-center space-x-3">
+          {liveSession && (
+            <Badge variant="secondary" className="bg-red-50 text-red-700">
+              🔴 Live Session
+            </Badge>
+          )}
           <Badge variant="secondary" className="bg-green-50 text-green-700">
             Session Active
           </Badge>
+          <Button variant="outline" onClick={onBackToCommittees}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Committees
+          </Button>
           <Button variant="outline" onClick={onExit}>Exit Session</Button>
         </div>
       </div>
 
-      {/* Crisis Alert */}
+      {/* Crisis Alert - Updated for committee */}
       <Card className="border-orange-200 bg-orange-50">
         <CardContent className="p-4">
           <div className="flex items-center space-x-3">
             <AlertTriangle className="h-6 w-6 text-orange-600" />
             <div className="flex-1">
-              <h3 className="font-semibold text-orange-900">{crisisUpdate.title}</h3>
-              <p className="text-sm text-orange-800">{crisisUpdate.description}</p>
+              <h3 className="font-semibold text-orange-900">
+                {committee?.type === 'indian' 
+                  ? 'Breaking: Opposition walks out over digital privacy concerns' 
+                  : 'Breaking: Economic Sanctions Announced'
+                }
+              </h3>
+              <p className="text-sm text-orange-800">
+                {committee?.type === 'indian'
+                  ? 'Parliament session disrupted. Delegates must address privacy vs security balance.'
+                  : 'Major economic sanctions have been imposed affecting global trade relations. Delegates must adjust their positions accordingly.'
+                }
+              </p>
             </div>
-            <Badge variant="destructive">Crisis Update</Badge>
+            <Badge variant="destructive">
+              {committee?.type === 'indian' ? 'Parliamentary Alert' : 'Crisis Update'}
+            </Badge>
           </div>
         </CardContent>
       </Card>
 
       {/* Main Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Country Seats (Chess.com style) */}
+        {/* Country/Party Seats */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="card-shadow">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Globe className="h-5 w-5 text-blue-600" />
-                <span>Delegate Seats</span>
+                <span>{committee?.type === 'indian' ? 'Party Seats' : 'Delegate Seats'}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -162,46 +198,42 @@ const MunArena = ({ onExit }: MunArenaProps) => {
             </CardContent>
           </Card>
 
-          {/* Current Resolution */}
+          {/* Current Agenda/Resolution */}
           <Card className="card-shadow">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <FileText className="h-5 w-5 text-purple-600" />
-                <span>Current Resolution</span>
+                <span>{committee?.type === 'indian' ? 'Current Bill' : 'Current Resolution'}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {resolutions.map((resolution, index) => (
-                  <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{resolution.title}</h4>
-                        <p className="text-sm text-gray-500">{resolution.id}</p>
-                      </div>
-                      <Badge variant={resolution.status === 'Under Discussion' ? 'default' : 'secondary'}>
-                        {resolution.status}
-                      </Badge>
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{getCurrentAgenda()}</h4>
+                      <p className="text-sm text-gray-500">
+                        {committee?.type === 'indian' ? 'Bill No. 2024/001' : 'Resolution A/78/123'}
+                      </p>
                     </div>
-                    
-                    {resolution.status === 'Under Discussion' && (
-                      <div className="grid grid-cols-3 gap-4 mt-3">
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-green-600">{resolution.votes.favor}</div>
-                          <div className="text-xs text-gray-500">In Favor</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-red-600">{resolution.votes.against}</div>
-                          <div className="text-xs text-gray-500">Against</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-yellow-600">{resolution.votes.abstain}</div>
-                          <div className="text-xs text-gray-500">Abstain</div>
-                        </div>
-                      </div>
-                    )}
+                    <Badge variant="default">Under Discussion</Badge>
                   </div>
-                ))}
+                  
+                  <div className="grid grid-cols-3 gap-4 mt-3">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-600">12</div>
+                      <div className="text-xs text-gray-500">In Favor</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-red-600">3</div>
+                      <div className="text-xs text-gray-500">Against</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-yellow-600">2</div>
+                      <div className="text-xs text-gray-500">Abstain</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -330,20 +362,35 @@ const MunArena = ({ onExit }: MunArenaProps) => {
             <CardContent>
               <div className="space-y-3">
                 <div className="p-3 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-1">Representing: {selectedCountry}</h4>
+                  <h4 className="font-medium text-blue-900 mb-1">
+                    {committee?.type === 'indian' ? `Representing: ${selectedCountry} Party` : `Representing: ${selectedCountry}`}
+                  </h4>
                   <p className="text-sm text-blue-800">
-                    As the delegate for {selectedCountry}, you support innovative climate solutions 
-                    while maintaining economic stability and international cooperation.
+                    {committee?.type === 'indian' 
+                      ? `As a ${selectedCountry} representative, you advocate for transparent digital governance while ensuring citizen privacy protection and constitutional rights.`
+                      : `As the delegate for ${selectedCountry}, you support innovative climate solutions while maintaining economic stability and international cooperation.`
+                    }
                   </p>
                 </div>
                 
                 <div className="space-y-2">
                   <h5 className="font-medium text-gray-900">Key Talking Points:</h5>
                   <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• Technology transfer for developing nations</li>
-                    <li>• Carbon pricing mechanisms</li>
-                    <li>• Green energy investment frameworks</li>
-                    <li>• Climate adaptation funding</li>
+                    {committee?.type === 'indian' ? (
+                      <>
+                        <li>• Data protection and privacy rights</li>
+                        <li>• Digital infrastructure development</li>
+                        <li>• Cybersecurity framework</li>
+                        <li>• Constitutional compliance</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>• Technology transfer for developing nations</li>
+                        <li>• Carbon pricing mechanisms</li>
+                        <li>• Green energy investment frameworks</li>
+                        <li>• Climate adaptation funding</li>
+                      </>
+                    )}
                   </ul>
                 </div>
               </div>
