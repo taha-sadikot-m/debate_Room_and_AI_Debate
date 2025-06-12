@@ -1,7 +1,9 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Lightbulb } from 'lucide-react';
 import PublicSpeakingSession from './PublicSpeakingSession';
 
 interface AdzapRulesProps {
@@ -13,20 +15,20 @@ const AdzapRules = ({ onBack }: AdzapRulesProps) => {
 
   const activity = {
     id: 'adzap',
-    title: '📺 AdZap',
-    description: 'Create and present creative advertisements for products or services. Showcase your marketing creativity and presentation skills.',
-    duration: '15-20 minutes',
-    tokens: '8-15 tokens',
+    title: '📢 Ad-Zap',
+    description: 'Create compelling advertisements for products on the spot. Showcase your creativity and persuasion skills.',
+    duration: '8-12 minutes',
+    tokens: '10-18 tokens',
     rules: [
-      'Create an original advertisement concept',
-      'Identify target audience and their needs',
-      'Use persuasive language and compelling visuals (describe them)',
-      'Include a memorable tagline or slogan',
+      'Create an advertisement for a given product in 2-3 minutes',
+      'Include key selling points and target audience appeal',
+      'Use persuasive language and emotional triggers',
+      'Be creative with presentation style and format',
       'Address potential customer objections',
-      'Demonstrate the product benefits clearly',
-      'End with a strong call-to-action'
+      'Include a strong call-to-action',
+      'Stay within time limits for maximum impact'
     ],
-    aiSampleArgument: "Introducing EcoClean - the revolutionary cleaning spray that's tough on stains but gentle on the planet! Picture this: a busy mother of three discovers a mysterious stain on her white sofa just minutes before guests arrive. She sprays EcoClean, and within seconds, the stain vanishes completely. What makes EcoClean different? It's made from 100% biodegradable ingredients, safe for children and pets, yet powerful enough to tackle the toughest stains. Our customers report 95% satisfaction rates, and we offer a money-back guarantee. For just $12.99, you get 500ml of cleaning power that lasts three times longer than leading brands. EcoClean - where effectiveness meets environmental responsibility. Order now and get free shipping! Clean conscience, cleaner home."
+    aiSampleArgument: "Introducing EcoClean - the revolutionary cleaning solution that's changing homes across India! Made from 100% natural ingredients, EcoClean doesn't just clean your surfaces - it protects your family's health. While chemical cleaners leave toxic residues, EcoClean uses the power of neem and tulsi to eliminate 99.9% of germs naturally. Perfect for families with children and pets. Join over 50,000 satisfied customers who've made the switch. Available now at your local store for just ₹199. EcoClean - Clean homes, healthy families, better tomorrow!"
   };
 
   if (showSession) {
@@ -43,8 +45,8 @@ const AdzapRules = ({ onBack }: AdzapRulesProps) => {
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">📺 AdZap</h1>
-          <p className="text-gray-600 mt-2">Creative advertising and marketing challenge</p>
+          <h1 className="text-3xl font-bold text-gray-900">📢 Ad-Zap</h1>
+          <p className="text-gray-600 mt-2">Creative advertising challenge</p>
         </div>
         <Button variant="outline" onClick={onBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -52,19 +54,19 @@ const AdzapRules = ({ onBack }: AdzapRulesProps) => {
         </Button>
       </div>
 
-      <Card className="card-shadow border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+      <Card className="card-shadow border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Zap className="h-6 w-6 text-indigo-600" />
-            <span>About AdZap</span>
+            <Lightbulb className="h-6 w-6 text-orange-600" />
+            <span>About Ad-Zap</span>
           </CardTitle>
           <CardDescription>
-            Unleash your creativity and marketing prowess through advertisement creation
+            Test your creative and persuasive skills by creating compelling advertisements
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-indigo-800">Rules & Guidelines</h3>
+            <h3 className="text-xl font-semibold text-orange-800">Rules & Guidelines</h3>
             <ul className="list-disc pl-5 space-y-2 text-gray-700">
               {activity.rules.map((rule, index) => (
                 <li key={index}>{rule}</li>
@@ -73,24 +75,21 @@ const AdzapRules = ({ onBack }: AdzapRulesProps) => {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-indigo-800">Format</h3>
+            <h3 className="text-xl font-semibold text-orange-800">Format</h3>
             <p className="text-gray-700">
-              Participants will have 15-20 minutes to create and present an advertisement for a given product or service.
+              Create an engaging advertisement that captures attention and persuades the audience.
+              Focus on benefits, emotional appeal, and clear call-to-action.
             </p>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600 text-sm">Duration</span>
-              <Badge variant="outline">{activity.duration}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600 text-sm">Token Reward</span>
-              <Badge className="bg-yellow-100 text-yellow-700">{activity.tokens}</Badge>
+            <div className="flex flex-wrap gap-2">
+              <Badge className="bg-orange-100 text-orange-700">Creative Presentation</Badge>
+              <Badge className="bg-orange-100 text-orange-700">Persuasive Content</Badge>
             </div>
           </div>
           
           <div className="text-center pt-6">
             <Button 
               onClick={() => setShowSession(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 px-8 py-3 text-lg"
+              className="bg-orange-600 hover:bg-orange-700 px-8 py-3 text-lg"
             >
               Start Practice Session
             </Button>
