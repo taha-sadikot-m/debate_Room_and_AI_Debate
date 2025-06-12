@@ -6,10 +6,15 @@ import AIVoiceResponse from './debate/AIVoiceResponse';
 import RealtimeFeedback from './debate/RealtimeFeedback';
 import DebateTips from './debate/DebateTips';
 import AudioControls from './debate/AudioControls';
+import DebateScoring from './debate/DebateScoring';
+import FreudianAnalysis from './debate/FreudianAnalysis';
+import POIHandler from './debate/POIHandler';
+import DebatePhaseIndicator from './debate/DebatePhaseIndicator';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Hand, MessageSquare, Square, Trophy, Award, Target } from 'lucide-react';
+import { useDebateAI } from '@/hooks/useDebateAI';
 
 interface DebateRoomProps {
   debateType: 'ai' | '1v1' | 'mun';
@@ -51,8 +56,20 @@ const DebateRoom = ({ debateType, topic, language = 'en', onExit }: DebateRoomPr
     superego: 6.2,
     overall: 85
   });
+  const [assignedSide] = useState<'FOR' | 'AGAINST'>(Math.random() > 0.5 ? 'FOR' : 'AGAINST');
+  const [showScoring, setShowScoring] = useState(false);
+  const [showFreudAnalysis, setShowFreudAnalysis] = useState(false);
+  const [currentPOI, setCurrentPOI] = useState<string>('');
+  const [showPOI, setShowPOI] = useState(false);
+  const [latestScores, setLatestScores] = useState(null);
+  const [latestFreudAnalysis, setLatestFreudAnalysis] = useState(null);
 
-  // Generate AI response in selected language
+  const debateAI = useDebateAI({
+    topic,
+    theme: 'General',
+    assignedSide
+  });
+
   const generateAIResponse = (userSpeech: string) => {
     const responses: Record<string, string> = {
       'en': "While renewable energy is important, we must consider the economic transition costs and job displacement in traditional energy sectors. A gradual transition with proper retraining programs would be more practical than rapid implementation...",
@@ -144,6 +161,16 @@ const DebateRoom = ({ debateType, topic, language = 'en', onExit }: DebateRoomPr
   const handleStartRecording = () => {
     setIsRecording(true);
     setIsTimerRunning(true);
+    
+    // Random POI generation during speech (30% chance)
+    if (Math.random() < 0.3) {
+      setTimeout(() => {
+        const poi = debateAI.generatePOI();
+        setCurrentPOI(poi);
+        setShowPOI(true);
+      }, Math.random() * 30000 + 15000); // 15-45 seconds into speech
+    }
+
     // Simulate speech recognition
     setTimeout(() => {
       const speechTexts: Record<string, string> = {
@@ -162,49 +189,62 @@ const DebateRoom = ({ debateType, topic, language = 'en', onExit }: DebateRoomPr
     }, 2000);
   };
 
-  const handleStopRecording = () => {
+  const handleStopRecording = async () => {
     setIsRecording(false);
     setIsTimerRunning(false);
-    // Generate AI response and show POI option
-    setTimeout(() => {
-      setAiResponse(generateAIResponse(speechText));
+    
+    // Generate scores and analysis
+    const scores = await debateAI.scoreUserSpeech(speechText);
+    const freudAnalysis = await debateAI.analyzeFreudian(speechText);
+    
+    setLatestScores(scores);
+    setLatestFreudAnalysis(freudAnalysis);
+    setShowScoring(true);
+    setShowFreudAnalysis(true);
+    
+    // Generate AI response
+    setTimeout(async () => {
+      const response = await debateAI.generateAIResponse(speechText);
+      setAiResponse(response);
       setCurrentSpeaker('opponent');
-      setShowPOIOption(true);
     }, 1000);
   };
 
-  const handleRequestPOI = () => {
-    setPOIRequested(true);
-    // Simulate AI approval (80% chance)
+  const handlePOIAccept = () => {
+    setShowPOI(false);
+    // Allow 30 seconds for POI response
     setTimeout(() => {
-      const approved = Math.random() > 0.2;
-      setPOIApproved(approved);
-      if (!approved) {
-        setPOIRequested(false);
-        alert("POI request denied. The speaker will continue.");
-      }
-    }, 2000);
+      console.log('POI response time ended');
+    }, 30000);
+  };
+
+  const handlePOIDecline = () => {
+    setShowPOI(false);
+    setCurrentPOI('');
+  };
+
+  const handlePOITimeout = () => {
+    setShowPOI(false);
+    setCurrentPOI('');
   };
 
   const handleNextRound = () => {
+    debateAI.advanceDebatePhase();
+    
     const newRoundsCompleted = roundsCompleted + 1;
     setRoundsCompleted(newRoundsCompleted);
     
-    // Declare winner after 2 rounds (1 round each)
-    if (newRoundsCompleted >= 2) {
+    if (newRoundsCompleted >= 3) { // 3 phases: opening, rebuttal, closing
       const winner = generateWinnerDeclaration();
       setWinnerData(winner);
       setShowWinnerDeclaration(true);
     } else {
-      // Continue to next round
       setCurrentSpeaker('student');
       setSpeechText('');
       setAiResponse('');
-      setShowPOIOption(false);
-      setPOIRequested(false);
-      setPOIApproved(false);
+      setShowScoring(false);
+      setShowFreudAnalysis(false);
       setTimeRemaining(60);
-      setPOITimeRemaining(30);
     }
   };
 
@@ -337,6 +377,13 @@ const DebateRoom = ({ debateType, topic, language = 'en', onExit }: DebateRoomPr
         onExit={onExit} 
       />
 
+      {/* Debate Phase and Assignment */}
+      <DebatePhaseIndicator 
+        currentRound={debateAI.currentRound}
+        phase={debateAI.debatePhase}
+        assignedSide={assignedSide}
+      />
+
       {/* Language Indicator */}
       <Card className="card-shadow">
         <CardContent className="p-4">
@@ -354,43 +401,14 @@ const DebateRoom = ({ debateType, topic, language = 'en', onExit }: DebateRoomPr
         </CardContent>
       </Card>
 
-      {/* Round Progress Indicator */}
-      <Card className="card-shadow">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Debate Progress</h3>
-              <p className="text-sm text-gray-500">Round {roundsCompleted + 1} of 2</p>
-            </div>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700">
-              {debateFormat === '1v1' ? '1v1 Timed' : debateFormat.charAt(0).toUpperCase() + debateFormat.slice(1)}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="card-shadow">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Debate Format</h3>
-              <p className="text-sm text-gray-500">Choose your preferred format</p>
-            </div>
-            <div className="flex space-x-2">
-              {(['1v1', 'extempore', 'quickfire'] as const).map((format) => (
-                <Button
-                  key={format}
-                  variant={debateFormat === format ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setDebateFormat(format)}
-                >
-                  {format === '1v1' ? '1v1 Timed' : format.charAt(0).toUpperCase() + format.slice(1)}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* POI Handler */}
+      <POIHandler
+        poiText={currentPOI}
+        isActive={showPOI}
+        onAccept={handlePOIAccept}
+        onDecline={handlePOIDecline}
+        onTimeout={handlePOITimeout}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
@@ -410,6 +428,15 @@ const DebateRoom = ({ debateType, topic, language = 'en', onExit }: DebateRoomPr
             onStopRecording={handleStopRecording}
           />
 
+          {/* Scoring and Analysis */}
+          {latestScores && (
+            <DebateScoring scores={latestScores} isVisible={showScoring} />
+          )}
+
+          {latestFreudAnalysis && (
+            <FreudianAnalysis analysis={latestFreudAnalysis} isVisible={showFreudAnalysis} />
+          )}
+
           {isRecording && (
             <Card className="card-shadow border-orange-200">
               <CardContent className="p-4 text-center">
@@ -428,120 +455,21 @@ const DebateRoom = ({ debateType, topic, language = 'en', onExit }: DebateRoomPr
             </Card>
           )}
 
-          {(showPOIOption || poiRequested || poiApproved) && (
-            <Card className="card-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Hand className="h-5 w-5 text-orange-600" />
-                  <span>Point of Information (POI)</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {showPOIOption && !poiRequested && !poiApproved && (
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-3">
-                      The opponent is speaking. Would you like to raise a Point of Information?
-                    </p>
-                    <Button onClick={handleRequestPOI} className="bg-orange-500 hover:bg-orange-600">
-                      <Hand className="h-4 w-4 mr-2" />
-                      Raise POI
-                    </Button>
-                  </div>
-                )}
-
-                {poiRequested && !poiApproved && (
-                  <div className="text-center">
-                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-                      POI Request Pending...
-                    </Badge>
-                    <p className="text-sm text-gray-600 mt-2">Waiting for speaker approval</p>
-                  </div>
-                )}
-
-                {poiApproved && (
-                  <div className="text-center">
-                    <Badge variant="default" className="bg-green-100 text-green-700 mb-3">
-                      POI Approved - {poiTimeRemaining}s remaining
-                    </Badge>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <p className="text-green-800 font-medium">You have 30 seconds for your Point of Information</p>
-                      <Button 
-                        className="mt-2"
-                        onClick={() => console.log('Start POI recording')}
-                      >
-                        Start POI Recording
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
           <AIVoiceResponse
             aiResponse={aiResponse}
             language={language}
-            onNextRound={() => {
-              const newRoundsCompleted = roundsCompleted + 1;
-              setRoundsCompleted(newRoundsCompleted);
-              
-              if (newRoundsCompleted >= 2) {
-                const winner = generateWinnerDeclaration();
-                setWinnerData(winner);
-                setShowWinnerDeclaration(true);
-              } else {
-                setCurrentSpeaker('student');
-                setSpeechText('');
-                setAiResponse('');
-                setShowPOIOption(false);
-                setPOIRequested(false);
-                setPOIApproved(false);
-                setTimeRemaining(60);
-                setPOITimeRemaining(30);
-              }
-            }}
+            onNextRound={handleNextRound}
           />
         </div>
 
         <div className="space-y-6">
-          <Card className="card-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <MessageSquare className="h-5 w-5 text-purple-600" />
-                <span>Freud Analysis</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Id (Instinctive)</span>
-                  <Badge variant="outline" className="bg-red-50 text-red-700">
-                    {feedback.id}/10
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Ego (Rational)</span>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                    {feedback.ego}/10
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Superego (Moral)</span>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    {feedback.superego}/10
-                  </Badge>
-                </div>
-              </div>
-              
-              <div className="pt-3 border-t border-gray-200">
-                <p className="text-sm font-medium text-gray-700">Overall Score</p>
-                <p className="text-2xl font-bold text-purple-600">{feedback.overall}/100</p>
-                <p className="text-xs text-gray-600 mt-1">
-                  "Strong rational arguments, work on emotional appeal"
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Real-time feedback during recording */}
+          <RealtimeFeedback feedback={{
+            fluency: 85,
+            clarity: 90,
+            relevance: 88,
+            confidence: 82
+          }} />
 
           <DebateTips />
           <AudioControls />
