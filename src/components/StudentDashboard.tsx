@@ -56,16 +56,10 @@ const StudentDashboard = ({
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
-      {/* Header with Google Login */}
+      {/* Header */}
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Model UN & Debate Platform</h1>
-        <p className="text-lg text-gray-600">Welcome Back, Hari!</p>
-        <div className="mt-4">
-          <Button className="gradient-indigo text-white">
-            <Users className="h-4 w-4 mr-2" />
-            Continue with Google
-          </Button>
-        </div>
+        <p className="text-lg text-gray-600">Welcome Back!</p>
       </div>
 
       {/* Quick Stats */}

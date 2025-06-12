@@ -11,11 +11,11 @@ export const useSpeechToText = (options: UseSpeechToTextOptions = {}) => {
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSupported, setIsSupported] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       
       if (SpeechRecognitionClass) {
         setIsSupported(true);
@@ -29,7 +29,7 @@ export const useSpeechToText = (options: UseSpeechToTextOptions = {}) => {
           setError(null);
         };
 
-        recognition.onresult = (event) => {
+        recognition.onresult = (event: any) => {
           let finalTranscript = '';
           let interimTranscript = '';
 
@@ -45,7 +45,7 @@ export const useSpeechToText = (options: UseSpeechToTextOptions = {}) => {
           setTranscript(finalTranscript + interimTranscript);
         };
 
-        recognition.onerror = (event) => {
+        recognition.onerror = (event: any) => {
           setError(event.error);
           setIsListening(false);
         };

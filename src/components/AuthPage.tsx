@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquare, Mail, Lock, Chrome } from 'lucide-react';
+import { MessageSquare, Mail, Lock } from 'lucide-react';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
@@ -29,36 +29,6 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     };
     checkAuth();
   }, [onAuthSuccess]);
-
-  const handleGoogleSignIn = async () => {
-    try {
-      setLoading(true);
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl
-        }
-      });
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign in with Google",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,24 +99,6 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
         </CardHeader>
         
         <CardContent className="space-y-4">
-          <Button
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-          >
-            <Chrome className="h-4 w-4 mr-2" />
-            Continue with Google
-          </Button>
-          
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-gray-50 px-2 text-gray-500">Or continue with</span>
-            </div>
-          </div>
-          
           <form onSubmit={handleEmailAuth} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
