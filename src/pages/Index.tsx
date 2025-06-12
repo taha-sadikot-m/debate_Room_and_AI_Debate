@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import StudentDashboard from '@/components/StudentDashboard';
 import TeacherDashboard from '@/components/TeacherDashboard';
+import DifficultySelection from '@/components/DifficultySelection';
 import TopicSelection from '@/components/TopicSelection';
 import OpponentSelection from '@/components/OpponentSelection';
 import DebateRoom from '@/components/DebateRoom';
@@ -18,6 +19,7 @@ interface Topic {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   category: string;
   timeEstimate: string;
+  theme: string;
   aiArguments: {
     pro: string[];
     con: string[];
@@ -27,12 +29,14 @@ interface Topic {
 const Index = () => {
   const [userRole, setUserRole] = useState<'student' | 'teacher'>('student');
   const [userTokens, setUserTokens] = useState(156);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'topics' | 'opponents' | 'debate' | 'mun' | 'pricing' | 'speeches' | 'scores'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'difficulty' | 'topics' | 'opponents' | 'debate' | 'mun' | 'pricing' | 'speeches' | 'scores'>('dashboard');
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Easy');
+  const [selectedTheme, setSelectedTheme] = useState<string>('');
   const [debateType, setDebateType] = useState<'ai' | '1v1' | 'mun'>('ai');
 
   const handleStartDebate = () => {
-    setCurrentView('topics');
+    setCurrentView('difficulty');
   };
 
   const handleJoinMUN = () => {
@@ -45,6 +49,12 @@ const Index = () => {
 
   const handleLearnSpeeches = () => {
     setCurrentView('speeches');
+  };
+
+  const handleDifficultySelect = (difficulty: 'Easy' | 'Medium' | 'Hard', theme: string) => {
+    setSelectedDifficulty(difficulty);
+    setSelectedTheme(theme);
+    setCurrentView('topics');
   };
 
   const handleTopicSelect = (topic: Topic) => {
@@ -70,6 +80,11 @@ const Index = () => {
 
   const handleBackToTopics = () => {
     setCurrentView('topics');
+    setSelectedTopic(null);
+  };
+
+  const handleBackToDifficulty = () => {
+    setCurrentView('difficulty');
     setSelectedTopic(null);
   };
 
@@ -106,10 +121,19 @@ const Index = () => {
           <TeacherDashboard />
         )}
 
+        {currentView === 'difficulty' && (
+          <DifficultySelection 
+            onDifficultySelect={handleDifficultySelect}
+            onBack={handleBackToDashboard}
+          />
+        )}
+
         {currentView === 'topics' && (
           <TopicSelection 
+            difficulty={selectedDifficulty}
+            theme={selectedTheme}
             onTopicSelect={handleTopicSelect}
-            onBack={handleBackToDashboard}
+            onBack={handleBackToDifficulty}
           />
         )}
 

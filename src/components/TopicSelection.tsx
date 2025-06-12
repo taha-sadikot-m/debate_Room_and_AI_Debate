@@ -19,6 +19,7 @@ interface Topic {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   category: string;
   timeEstimate: string;
+  theme: string;
   aiArguments: {
     pro: string[];
     con: string[];
@@ -26,116 +27,179 @@ interface Topic {
 }
 
 interface TopicSelectionProps {
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  theme: string;
   onTopicSelect: (topic: Topic) => void;
   onBack: () => void;
 }
 
-const TopicSelection = ({ onTopicSelect, onBack }: TopicSelectionProps) => {
+const TopicSelection = ({ difficulty, theme, onTopicSelect, onBack }: TopicSelectionProps) => {
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [showArguments, setShowArguments] = useState(false);
 
-  const topics: Topic[] = [
+  const allTopics: Topic[] = [
+    // Technology Topics
     {
-      id: '1',
-      title: "Should artificial intelligence be regulated by international law?",
-      description: "Debate the need for global AI governance and oversight",
-      difficulty: 'Hard',
-      category: 'Technology',
-      timeEstimate: '15-20 min',
-      aiArguments: {
-        pro: [
-          "AI poses existential risks that require coordinated global response",
-          "International standards would prevent a 'race to the bottom' in AI safety",
-          "Global regulation ensures equitable AI development across all nations"
-        ],
-        con: [
-          "Innovation thrives best with minimal regulatory interference",
-          "National sovereignty should determine each country's AI policies",
-          "Technology evolves faster than international law can adapt"
-        ]
-      }
-    },
-    {
-      id: '2',
-      title: "Is social media harmful to teenage mental health?",
-      description: "Examine the psychological impacts of social platforms on youth",
+      id: 'tech-1',
+      title: "Should AI replace human teachers in schools?",
+      description: "Debate the role of artificial intelligence in education",
       difficulty: 'Medium',
-      category: 'Health & Society',
+      category: 'Education Technology',
       timeEstimate: '12-15 min',
+      theme: 'Technology',
       aiArguments: {
         pro: [
-          "Studies show correlation between social media use and depression in teens",
-          "Cyberbullying and online harassment are rampant on these platforms",
-          "Constant comparison with others damages self-esteem and body image"
+          "AI can provide personalized learning at scale for every student",
+          "AI teachers are available 24/7 and never get tired or frustrated",
+          "AI can instantly adapt to different learning styles and speeds"
         ],
         con: [
-          "Social media provides vital connections for isolated teenagers",
-          "Platforms offer educational resources and creative outlets",
-          "Digital literacy skills are essential for modern life and careers"
+          "Human emotional connection is crucial for student development",
+          "Teachers provide mentorship and life guidance beyond academics",
+          "AI lacks creativity and cannot inspire students like humans can"
         ]
       }
     },
     {
-      id: '3',
-      title: "Should school uniforms be mandatory?",
-      description: "Discuss the pros and cons of standardized school dress codes",
-      difficulty: 'Easy',
-      category: 'Education',
-      timeEstimate: '10-12 min',
+      id: 'tech-2',
+      title: "Should social media platforms ban political advertisements?",
+      description: "Examine the impact of political ads on democratic processes",
+      difficulty: 'Hard',
+      category: 'Digital Democracy',
+      timeEstimate: '15-20 min',
+      theme: 'Technology',
       aiArguments: {
         pro: [
-          "Uniforms reduce peer pressure and eliminate clothing-based bullying",
-          "They create a sense of school unity and pride among students",
-          "Uniforms level the economic playing field between rich and poor students"
+          "Political ads spread misinformation and manipulate voters",
+          "Wealthy candidates get unfair advantages through ad spending",
+          "Foreign interference through paid political content threatens democracy"
         ],
         con: [
-          "Students have a fundamental right to express their individuality",
-          "Uniforms don't address the root causes of bullying or inequality",
-          "The cost burden of uniforms often falls hardest on low-income families"
+          "Political advertising is protected free speech",
+          "Banning ads limits candidates' ability to reach voters",
+          "Transparency and fact-checking are better solutions than censorship"
         ]
       }
     },
+    // Politics Topics
     {
-      id: '4',
-      title: "Is renewable energy the complete solution to climate change?",
-      description: "Evaluate renewable energy's role in addressing global warming",
+      id: 'politics-1',
+      title: "Should voting be mandatory in democratic countries?",
+      description: "Debate compulsory voting and civic responsibility",
       difficulty: 'Medium',
-      category: 'Environment',
-      timeEstimate: '15-18 min',
+      category: 'Democratic Participation',
+      timeEstimate: '12-15 min',
+      theme: 'Politics',
       aiArguments: {
         pro: [
-          "Solar and wind power are now cheaper than fossil fuels in many markets",
-          "Renewable energy creates more jobs per dollar invested than fossil fuels",
-          "Technology advances are rapidly solving storage and reliability issues"
+          "Mandatory voting ensures government represents the entire population",
+          "It reduces the influence of extreme political groups",
+          "Countries like Australia show it works successfully"
         ],
         con: [
-          "Intermittency issues require backup power that often comes from fossil fuels",
-          "Manufacturing renewable infrastructure has significant environmental costs",
-          "Complete transition requires massive infrastructure changes that may not be feasible"
+          "Forcing people to vote violates individual freedom",
+          "Uninformed forced votes can harm democratic quality",
+          "The right to vote includes the right not to vote"
         ]
       }
     },
+    // Environment Topics
     {
-      id: '5',
-      title: "Should video games be considered a sport?",
-      description: "Debate whether esports deserves recognition as legitimate sports",
+      id: 'env-1',
+      title: "Should fast fashion be banned to save the environment?",
+      description: "Discuss the environmental impact of disposable clothing",
       difficulty: 'Easy',
-      category: 'Entertainment',
-      timeEstimate: '10-15 min',
+      category: 'Sustainable Fashion',
+      timeEstimate: '10-12 min',
+      theme: 'Environment',
       aiArguments: {
         pro: [
-          "Esports require intense skill, strategy, and hours of dedicated practice",
-          "Professional gaming has organized leagues, sponsors, and millions of viewers",
-          "Mental athleticism and quick reflexes are as valuable as physical prowess"
+          "Fast fashion is one of the world's largest polluting industries",
+          "It promotes wasteful consumption and exploits workers",
+          "Sustainable alternatives exist and are becoming more affordable"
         ],
         con: [
-          "Sports traditionally require physical exertion and athletic ability",
-          "Video games promote sedentary lifestyles rather than physical fitness",
-          "Gaming lacks the character-building aspects of traditional team sports"
+          "Fast fashion makes clothing accessible to low-income families",
+          "Banning it would eliminate millions of jobs globally",
+          "Consumer education is better than government bans"
+        ]
+      }
+    },
+    // Food Topics
+    {
+      id: 'food-1',
+      title: "Should schools serve only vegetarian meals?",
+      description: "Debate plant-based nutrition in educational institutions",
+      difficulty: 'Easy',
+      category: 'School Nutrition',
+      timeEstimate: '10-12 min',
+      theme: 'Food',
+      aiArguments: {
+        pro: [
+          "Plant-based diets are healthier and reduce childhood obesity",
+          "Vegetarian meals have a lower environmental impact",
+          "It teaches children compassion towards animals"
+        ],
+        con: [
+          "Children need protein from meat for proper development",
+          "Many families' cultural and religious practices include meat",
+          "Schools should offer choice, not impose dietary restrictions"
+        ]
+      }
+    },
+    // Cinema Topics
+    {
+      id: 'cinema-1',
+      title: "Should movie theaters be replaced by streaming platforms?",
+      description: "Debate the future of cinema experience vs convenience",
+      difficulty: 'Easy',
+      category: 'Entertainment Industry',
+      timeEstimate: '10-12 min',
+      theme: 'Cinema',
+      aiArguments: {
+        pro: [
+          "Streaming is more convenient and affordable for families",
+          "Home viewing allows for pause, rewind, and comfort",
+          "Streaming platforms offer more diverse content choices"
+        ],
+        con: [
+          "Movie theaters provide unmatched audio-visual experience",
+          "Cinema is a social activity that brings communities together",
+          "Big-screen spectacles lose their impact on small screens"
+        ]
+      }
+    },
+    // Health Topics
+    {
+      id: 'health-1',
+      title: "Should mental health days be mandatory in schools and workplaces?",
+      description: "Discuss the importance of mental health in productivity",
+      difficulty: 'Medium',
+      category: 'Workplace Wellness',
+      timeEstimate: '12-15 min',
+      theme: 'Health',
+      aiArguments: {
+        pro: [
+          "Mental health is as important as physical health",
+          "Mandatory breaks prevent burnout and improve productivity",
+          "It reduces stigma around mental health issues"
+        ],
+        con: [
+          "People can already take sick days for mental health",
+          "Mandatory days might be abused by some individuals",
+          "Flexible personal time off is more effective than mandates"
         ]
       }
     }
   ];
+
+  // Filter topics by theme and difficulty
+  const filteredTopics = allTopics.filter(topic => 
+    topic.theme === theme && topic.difficulty === difficulty
+  );
+
+  // If no topics match exactly, show all topics from the theme
+  const topics = filteredTopics.length > 0 ? filteredTopics : allTopics.filter(topic => topic.theme === theme);
 
   const handleRandomTopic = () => {
     const randomTopic = topics[Math.floor(Math.random() * topics.length)];
@@ -157,7 +221,9 @@ const TopicSelection = ({ onTopicSelect, onBack }: TopicSelectionProps) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Choose Your Debate Topic</h1>
-          <p className="text-gray-600">Select from curated topics with AI-powered arguments</p>
+          <p className="text-gray-600">
+            {theme} • {difficulty} Level • AI-powered arguments included
+          </p>
         </div>
         <div className="flex space-x-3">
           <Button variant="outline" onClick={handleRandomTopic}>
@@ -165,7 +231,7 @@ const TopicSelection = ({ onTopicSelect, onBack }: TopicSelectionProps) => {
             Random Topic
           </Button>
           <Button variant="outline" onClick={onBack}>
-            Back to Dashboard
+            Back
           </Button>
         </div>
       </div>

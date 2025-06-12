@@ -10,7 +10,7 @@ import AudioControls from './debate/AudioControls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Hand, MessageSquare } from 'lucide-react';
+import { Hand, MessageSquare, Square } from 'lucide-react';
 
 interface DebateRoomProps {
   debateType: 'ai' | '1v1' | 'mun';
@@ -44,9 +44,14 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
       interval = setInterval(() => {
         setTimeRemaining(prev => prev - 1);
       }, 1000);
+    } else if (timeRemaining === 0) {
+      // Auto-stop recording when time is up
+      if (isRecording) {
+        handleStopRecording();
+      }
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning, timeRemaining]);
+  }, [isTimerRunning, timeRemaining, isRecording]);
 
   // POI Timer logic
   useEffect(() => {
@@ -171,6 +176,25 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
             onStartRecording={handleStartRecording}
             onStopRecording={handleStopRecording}
           />
+
+          {/* Stop Recording Option */}
+          {isRecording && (
+            <Card className="card-shadow border-orange-200">
+              <CardContent className="p-4 text-center">
+                <Button 
+                  variant="outline" 
+                  onClick={handleStopRecording}
+                  className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                >
+                  <Square className="h-4 w-4 mr-2" />
+                  Stop Recording Early
+                </Button>
+                <p className="text-sm text-gray-600 mt-2">
+                  You can stop before the minute is up
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* POI Section */}
           {(showPOIOption || poiRequested || poiApproved) && (
