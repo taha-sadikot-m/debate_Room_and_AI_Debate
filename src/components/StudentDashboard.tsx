@@ -16,7 +16,10 @@ import {
   Mic,
   GraduationCap,
   BarChart,
-  BookOpen
+  BookOpen,
+  Globe,
+  Users,
+  Settings
 } from 'lucide-react';
 
 interface StudentDashboardProps {
@@ -24,7 +27,10 @@ interface StudentDashboardProps {
   onStartDebate: () => void;
   onJoinMUN: () => void;
   onViewScores: () => void;
-  onLearnSpeeches: () => void;
+  onLearnForeignPolicy: () => void;
+  onViewRules: () => void;
+  onCreateCommittee: () => void;
+  onResources: () => void;
 }
 
 const StudentDashboard = ({ 
@@ -32,7 +38,10 @@ const StudentDashboard = ({
   onStartDebate,
   onJoinMUN,
   onViewScores,
-  onLearnSpeeches 
+  onLearnForeignPolicy,
+  onViewRules,
+  onCreateCommittee,
+  onResources
 }: StudentDashboardProps) => {
   const skillProgress = [
     { skill: 'Id (Instinctive)', level: 75, color: 'bg-red-500', description: 'Aggressive/Impulsive arguments' },
@@ -48,10 +57,16 @@ const StudentDashboard = ({
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
-      {/* Header */}
+      {/* Header with Google Login */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome Back, Hari!</h1>
-        <p className="text-lg text-gray-600">Ready to speak your mind and sharpen your debate skills?</p>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Model UN & Debate Platform</h1>
+        <p className="text-lg text-gray-600">Welcome Back, Hari!</p>
+        <div className="mt-4">
+          <Button className="gradient-indigo text-white">
+            <Users className="h-4 w-4 mr-2" />
+            Continue with Google
+          </Button>
+        </div>
       </div>
 
       {/* Quick Stats */}
@@ -113,14 +128,14 @@ const StudentDashboard = ({
         </Card>
       </div>
 
-      {/* Main Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Main Menu Options */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="card-shadow-lg border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onStartDebate}>
           <CardHeader className="text-center">
             <div className="mx-auto gradient-indigo p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
               <Mic className="h-8 w-8 text-white" />
             </div>
-            <CardTitle className="text-xl">🎤 Start Debate</CardTitle>
+            <CardTitle className="text-xl">📌 Start Debate</CardTitle>
             <CardDescription>
               AI voice opponent with live speech-to-text
             </CardDescription>
@@ -130,35 +145,59 @@ const StudentDashboard = ({
         <Card className="card-shadow-lg border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onJoinMUN}>
           <CardHeader className="text-center">
             <div className="mx-auto bg-purple-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-              <GraduationCap className="h-8 w-8 text-white" />
+              <Globe className="h-8 w-8 text-white" />
             </div>
-            <CardTitle className="text-xl">🎓 Join MUN Live</CardTitle>
+            <CardTitle className="text-xl">🌐 Join MUN</CardTitle>
             <CardDescription>
-              Live Model UN sessions with AI moderator
+              UNA-USA or Indian Parliamentary procedures
             </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card className="card-shadow-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onViewScores}>
-          <CardHeader className="text-center">
-            <div className="mx-auto bg-blue-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-              <BarChart className="h-8 w-8 text-white" />
-            </div>
-            <CardTitle className="text-xl">📊 My Scores & Tokens</CardTitle>
-            <CardDescription>
-              Track your Freud scores and progress
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Card className="card-shadow-lg border-2 border-green-200 bg-gradient-to-br from-green-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onLearnSpeeches}>
+        <Card className="card-shadow-lg border-2 border-green-200 bg-gradient-to-br from-green-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onLearnForeignPolicy}>
           <CardHeader className="text-center">
             <div className="mx-auto bg-green-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <GraduationCap className="h-8 w-8 text-white" />
+            </div>
+            <CardTitle className="text-xl">🎓 Learn Foreign Policy</CardTitle>
+            <CardDescription>
+              Country positions & bloc strategies
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card className="card-shadow-lg border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onViewRules}>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-orange-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
               <BookOpen className="h-8 w-8 text-white" />
             </div>
-            <CardTitle className="text-xl">📚 Learn from Famous Speeches</CardTitle>
+            <CardTitle className="text-xl">📘 Rules & Procedures</CardTitle>
             <CardDescription>
-              Practice with Obama, Greta, Dr. Kalam & more
+              UNA-USA & Indian Parliamentary rules
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card className="card-shadow-lg border-2 border-red-200 bg-gradient-to-br from-red-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onCreateCommittee}>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-red-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <Settings className="h-8 w-8 text-white" />
+            </div>
+            <CardTitle className="text-xl">🏛️ Create Committee</CardTitle>
+            <CardDescription>
+              Set up your own MUN committee
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card className="card-shadow-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onResources}>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-blue-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <BookOpen className="h-8 w-8 text-white" />
+            </div>
+            <CardTitle className="text-xl">📚 Resources</CardTitle>
+            <CardDescription>
+              Famous speeches, blogs & videos
             </CardDescription>
           </CardHeader>
         </Card>

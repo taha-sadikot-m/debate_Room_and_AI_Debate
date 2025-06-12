@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import StudentDashboard from '@/components/StudentDashboard';
@@ -10,8 +9,12 @@ import DebateRoom from '@/components/DebateRoom';
 import MunCommitteeSelection from '@/components/MunCommitteeSelection';
 import MunArena from '@/components/MunArena';
 import PricingPage from '@/components/PricingPage';
-import FamousSpeeches from '@/components/FamousSpeeches';
+import Resources from '@/components/Resources';
 import ScoresTokens from '@/components/ScoresTokens';
+import ProcedureSelection from '@/components/ProcedureSelection';
+import RulesPage from '@/components/RulesPage';
+import ForeignPolicyLearning from '@/components/ForeignPolicyLearning';
+import CreateCommittee from '@/components/CreateCommittee';
 import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
 
 interface Topic {
@@ -31,28 +34,41 @@ interface Topic {
 const Index = () => {
   const [userRole, setUserRole] = useState<'student' | 'teacher'>('student');
   const [userTokens, setUserTokens] = useState(156);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'difficulty' | 'topics' | 'opponents' | 'debate' | 'mun-committees' | 'mun' | 'pricing' | 'speeches' | 'scores'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'difficulty' | 'topics' | 'opponents' | 'debate' | 'mun-committees' | 'mun' | 'pricing' | 'resources' | 'scores' | 'procedure-selection' | 'rules' | 'foreign-policy' | 'create-committee'>('dashboard');
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Easy');
   const [selectedTheme, setSelectedTheme] = useState<string>('');
   const [selectedCommittee, setSelectedCommittee] = useState<MunCommittee | null>(null);
   const [selectedLiveSession, setSelectedLiveSession] = useState<LiveMunSession | null>(null);
   const [debateType, setDebateType] = useState<'ai' | '1v1' | 'mun'>('ai');
+  const [selectedProcedureType, setSelectedProcedureType] = useState<'UNA-USA' | 'Indian Parliamentary' | null>(null);
 
   const handleStartDebate = () => {
     setCurrentView('difficulty');
   };
 
   const handleJoinMUN = () => {
-    setCurrentView('mun-committees');
+    setCurrentView('procedure-selection');
   };
 
   const handleViewScores = () => {
     setCurrentView('scores');
   };
 
-  const handleLearnSpeeches = () => {
-    setCurrentView('speeches');
+  const handleLearnForeignPolicy = () => {
+    setCurrentView('foreign-policy');
+  };
+
+  const handleViewRules = () => {
+    setCurrentView('rules');
+  };
+
+  const handleCreateCommittee = () => {
+    setCurrentView('create-committee');
+  };
+
+  const handleResources = () => {
+    setCurrentView('resources');
   };
 
   const handleDifficultySelect = (difficulty: 'Easy' | 'Medium' | 'Hard', theme: string) => {
@@ -106,11 +122,17 @@ const Index = () => {
     setSelectedTopic(null);
   };
 
+  const handleProcedureSelect = (procedureType: 'UNA-USA' | 'Indian Parliamentary') => {
+    setSelectedProcedureType(procedureType);
+    setCurrentView('mun-committees');
+  };
+
   const handleBackToDashboard = () => {
     setCurrentView('dashboard');
     setSelectedTopic(null);
     setSelectedCommittee(null);
     setSelectedLiveSession(null);
+    setSelectedProcedureType(null);
   };
 
   const handleBackToCommittees = () => {
@@ -139,12 +161,41 @@ const Index = () => {
             onStartDebate={handleStartDebate}
             onJoinMUN={handleJoinMUN}
             onViewScores={handleViewScores}
-            onLearnSpeeches={handleLearnSpeeches}
+            onLearnForeignPolicy={handleLearnForeignPolicy}
+            onViewRules={handleViewRules}
+            onCreateCommittee={handleCreateCommittee}
+            onResources={handleResources}
           />
         )}
         
         {currentView === 'dashboard' && userRole === 'teacher' && (
           <TeacherDashboard />
+        )}
+
+        {currentView === 'procedure-selection' && (
+          <ProcedureSelection 
+            onProcedureSelect={handleProcedureSelect}
+            onBack={handleBackToDashboard}
+          />
+        )}
+
+        {currentView === 'rules' && (
+          <RulesPage 
+            procedureType={selectedProcedureType}
+            onBack={handleBackToDashboard}
+          />
+        )}
+
+        {currentView === 'foreign-policy' && (
+          <ForeignPolicyLearning 
+            onBack={handleBackToDashboard}
+          />
+        )}
+
+        {currentView === 'create-committee' && (
+          <CreateCommittee 
+            onBack={handleBackToDashboard}
+          />
         )}
 
         {currentView === 'difficulty' && (
@@ -200,8 +251,8 @@ const Index = () => {
           <PricingPage onBack={handleBackToDashboard} />
         )}
 
-        {currentView === 'speeches' && (
-          <FamousSpeeches onBack={handleBackToDashboard} />
+        {currentView === 'resources' && (
+          <Resources onBack={handleBackToDashboard} />
         )}
 
         {currentView === 'scores' && (
