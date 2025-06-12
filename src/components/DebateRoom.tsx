@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import DebateHeader from './debate/DebateHeader';
 import DebateTimer from './debate/DebateTimer';
@@ -10,7 +9,7 @@ import AudioControls from './debate/AudioControls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Hand, MessageSquare, Square } from 'lucide-react';
+import { Hand, MessageSquare, Square, Trophy, Award, Target } from 'lucide-react';
 
 interface DebateRoomProps {
   debateType: 'ai' | '1v1' | 'mun';
@@ -18,9 +17,21 @@ interface DebateRoomProps {
   onExit: () => void;
 }
 
+interface WinnerDeclaration {
+  winner: 'student' | 'opponent';
+  score: { student: number; opponent: number };
+  reasoning: string;
+  criteria: {
+    arguments: { student: number; opponent: number };
+    evidence: { student: number; opponent: number };
+    delivery: { student: number; opponent: number };
+    rebuttals: { student: number; opponent: number };
+  };
+}
+
 const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(60); // 1 minute timer
+  const [timeRemaining, setTimeRemaining] = useState(60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [currentSpeaker, setCurrentSpeaker] = useState<'student' | 'opponent'>('student');
   const [speechText, setSpeechText] = useState('');
@@ -30,6 +41,9 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
   const [poiApproved, setPOIApproved] = useState(false);
   const [poiTimeRemaining, setPOITimeRemaining] = useState(30);
   const [debateFormat, setDebateFormat] = useState<'1v1' | 'extempore' | 'quickfire'>('1v1');
+  const [roundsCompleted, setRoundsCompleted] = useState(0);
+  const [showWinnerDeclaration, setShowWinnerDeclaration] = useState(false);
+  const [winnerData, setWinnerData] = useState<WinnerDeclaration | null>(null);
   const [feedback, setFeedback] = useState({
     id: 7.5,
     ego: 8.8,
@@ -37,7 +51,6 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
     overall: 85
   });
 
-  // Timer logic
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isTimerRunning && timeRemaining > 0) {
@@ -45,7 +58,6 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
         setTimeRemaining(prev => prev - 1);
       }, 1000);
     } else if (timeRemaining === 0) {
-      // Auto-stop recording when time is up
       if (isRecording) {
         handleStopRecording();
       }
@@ -53,7 +65,6 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
     return () => clearInterval(interval);
   }, [isTimerRunning, timeRemaining, isRecording]);
 
-  // POI Timer logic
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (poiApproved && poiTimeRemaining > 0) {
@@ -67,6 +78,56 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
     }
     return () => clearInterval(interval);
   }, [poiApproved, poiTimeRemaining]);
+
+  const generateWinnerDeclaration = (): WinnerDeclaration => {
+    // Simulate analysis based on various factors
+    const studentArgs = Math.floor(Math.random() * 30) + 70; // 70-100
+    const opponentArgs = Math.floor(Math.random() * 30) + 65; // 65-95
+    
+    const studentEvidence = Math.floor(Math.random() * 25) + 75;
+    const opponentEvidence = Math.floor(Math.random() * 25) + 70;
+    
+    const studentDelivery = feedback.overall || Math.floor(Math.random() * 20) + 80;
+    const opponentDelivery = Math.floor(Math.random() * 25) + 70;
+    
+    const studentRebuttals = Math.floor(Math.random() * 30) + 70;
+    const opponentRebuttals = Math.floor(Math.random() * 30) + 65;
+
+    const studentTotal = (studentArgs + studentEvidence + studentDelivery + studentRebuttals) / 4;
+    const opponentTotal = (opponentArgs + opponentEvidence + opponentDelivery + opponentRebuttals) / 4;
+
+    const winner = studentTotal > opponentTotal ? 'student' : 'opponent';
+    const margin = Math.abs(studentTotal - opponentTotal);
+
+    let reasoning = '';
+    if (winner === 'student') {
+      reasoning = `You won this debate round! Your performance was strong across multiple areas. `;
+      if (studentArgs > opponentArgs + 5) reasoning += `Your arguments were particularly compelling and well-structured. `;
+      if (studentEvidence > opponentEvidence + 5) reasoning += `You provided excellent evidence to support your position. `;
+      if (studentDelivery > opponentDelivery + 5) reasoning += `Your delivery was confident and engaging. `;
+      if (margin < 5) reasoning += `However, it was a close debate - your opponent presented solid counterpoints.`;
+      else reasoning += `You maintained a clear advantage throughout the round.`;
+    } else {
+      reasoning = `Your opponent won this round. `;
+      if (opponentArgs > studentArgs + 5) reasoning += `They presented stronger and more logical arguments. `;
+      if (opponentEvidence > studentEvidence + 5) reasoning += `Their evidence was more compelling and relevant. `;
+      if (opponentDelivery > studentDelivery + 5) reasoning += `Their delivery was more persuasive. `;
+      if (margin < 5) reasoning += `But it was very close - you held your ground well and made valid points.`;
+      else reasoning += `Focus on strengthening your argument structure and evidence for the next round.`;
+    }
+
+    return {
+      winner,
+      score: { student: Math.round(studentTotal), opponent: Math.round(opponentTotal) },
+      reasoning,
+      criteria: {
+        arguments: { student: studentArgs, opponent: opponentArgs },
+        evidence: { student: studentEvidence, opponent: opponentEvidence },
+        delivery: { student: studentDelivery, opponent: opponentDelivery },
+        rebuttals: { student: studentRebuttals, opponent: opponentRebuttals }
+      }
+    };
+  };
 
   const handleStartRecording = () => {
     setIsRecording(true);
@@ -109,6 +170,31 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
   };
 
   const handleNextRound = () => {
+    const newRoundsCompleted = roundsCompleted + 1;
+    setRoundsCompleted(newRoundsCompleted);
+    
+    // Declare winner after 2 rounds (1 round each)
+    if (newRoundsCompleted >= 2) {
+      const winner = generateWinnerDeclaration();
+      setWinnerData(winner);
+      setShowWinnerDeclaration(true);
+    } else {
+      // Continue to next round
+      setCurrentSpeaker('student');
+      setSpeechText('');
+      setAiResponse('');
+      setShowPOIOption(false);
+      setPOIRequested(false);
+      setPOIApproved(false);
+      setTimeRemaining(60);
+      setPOITimeRemaining(30);
+    }
+  };
+
+  const handleNewDebate = () => {
+    setShowWinnerDeclaration(false);
+    setWinnerData(null);
+    setRoundsCompleted(0);
     setCurrentSpeaker('student');
     setSpeechText('');
     setAiResponse('');
@@ -127,6 +213,105 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
     setTimeRemaining(60);
   };
 
+  if (showWinnerDeclaration && winnerData) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <Card className="card-shadow-lg border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-white">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4">
+              <Trophy className="h-16 w-16 text-yellow-600 mx-auto mb-2" />
+              <CardTitle className="text-3xl font-bold text-gray-900">
+                Debate Complete!
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Winner Announcement */}
+            <div className="text-center p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+              <Award className="h-12 w-12 text-purple-600 mx-auto mb-3" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                🏆 {winnerData.winner === 'student' ? 'You Win!' : 'Opponent Wins!'}
+              </h2>
+              <div className="flex justify-center space-x-4 mb-4">
+                <Badge variant="outline" className="text-lg px-4 py-2 bg-blue-100 text-blue-700">
+                  You: {winnerData.score.student}/100
+                </Badge>
+                <Badge variant="outline" className="text-lg px-4 py-2 bg-red-100 text-red-700">
+                  Opponent: {winnerData.score.opponent}/100
+                </Badge>
+              </div>
+              <p className="text-gray-700 leading-relaxed">
+                {winnerData.reasoning}
+              </p>
+            </div>
+
+            {/* Detailed Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Target className="h-5 w-5 text-blue-600" />
+                    <span>Performance Breakdown</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {Object.entries(winnerData.criteria).map(([criterion, scores]) => (
+                    <div key={criterion} className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium capitalize">{criterion}</span>
+                        <div className="flex space-x-2">
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                            You: {scores.student}
+                          </span>
+                          <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
+                            Opp: {scores.opponent}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Key Strengths</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    {winnerData.winner === 'student' ? (
+                      <>
+                        <p className="text-green-700">✓ Strong logical reasoning</p>
+                        <p className="text-green-700">✓ Effective use of evidence</p>
+                        <p className="text-green-700">✓ Confident delivery</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-blue-700">• Good foundational arguments</p>
+                        <p className="text-blue-700">• Maintained composure</p>
+                        <p className="text-blue-700">• Room for improvement in rebuttals</p>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-center space-x-4 pt-6">
+              <Button onClick={handleNewDebate} className="bg-green-500 hover:bg-green-600">
+                Start New Debate
+              </Button>
+              <Button variant="outline" onClick={onExit}>
+                Return to Dashboard
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <DebateHeader 
@@ -135,7 +320,21 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
         onExit={onExit} 
       />
 
-      {/* Debate Format Selection */}
+      {/* Round Progress Indicator */}
+      <Card className="card-shadow">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-medium">Debate Progress</h3>
+              <p className="text-sm text-gray-500">Round {roundsCompleted + 1} of 2</p>
+            </div>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+              {debateFormat === '1v1' ? '1v1 Timed' : debateFormat.charAt(0).toUpperCase() + debateFormat.slice(1)}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="card-shadow">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
@@ -177,7 +376,6 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
             onStopRecording={handleStopRecording}
           />
 
-          {/* Stop Recording Option */}
           {isRecording && (
             <Card className="card-shadow border-orange-200">
               <CardContent className="p-4 text-center">
@@ -196,7 +394,6 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
             </Card>
           )}
 
-          {/* POI Section */}
           {(showPOIOption || poiRequested || poiApproved) && (
             <Card className="card-shadow">
               <CardHeader>
@@ -254,7 +451,6 @@ const DebateRoom = ({ debateType, topic, onExit }: DebateRoomProps) => {
         </div>
 
         <div className="space-y-6">
-          {/* Enhanced Freud Feedback */}
           <Card className="card-shadow">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
