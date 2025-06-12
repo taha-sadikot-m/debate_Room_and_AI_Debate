@@ -12,6 +12,7 @@ interface StudentDashboardProps {
   onCreateDebateRoom: () => void;
   onViewEvents: () => void;
   onResources: () => void;
+  onViewTokens: () => void;
 }
 
 const StudentDashboard = ({ 
@@ -21,7 +22,8 @@ const StudentDashboard = ({
   onJoinMUN,
   onCreateDebateRoom,
   onViewEvents,
-  onResources
+  onResources,
+  onViewTokens
 }: StudentDashboardProps) => {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -32,7 +34,7 @@ const StudentDashboard = ({
       </div>
 
       {/* Quick Stats */}
-      <QuickStatsCard userTokens={userTokens} />
+      <QuickStatsCard userTokens={userTokens} onViewTokens={onViewTokens} />
 
       {/* Main Menu Options */}
       <MainMenuCard 
