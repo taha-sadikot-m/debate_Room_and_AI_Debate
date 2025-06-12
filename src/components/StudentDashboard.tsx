@@ -1,8 +1,9 @@
-
-import QuickStatsCard from '@/components/dashboard/QuickStatsCard';
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Coins } from 'lucide-react';
 import MainMenuCard from '@/components/dashboard/MainMenuCard';
-import FreudAnalysisCard from '@/components/dashboard/FreudAnalysisCard';
-import RecentDebatesCard from '@/components/dashboard/RecentDebatesCard';
 
 interface StudentDashboardProps {
   userTokens: number;
@@ -13,43 +14,90 @@ interface StudentDashboardProps {
   onViewEvents: () => void;
   onResources: () => void;
   onViewTokens: () => void;
+  onPublicSpeaking: () => void;
 }
 
 const StudentDashboard = ({ 
   userTokens, 
-  onStartDebate,
+  onStartDebate, 
   onDebateLive,
-  onJoinMUN,
-  onCreateDebateRoom,
-  onViewEvents,
-  onResources,
-  onViewTokens
+  onJoinMUN, 
+  onCreateDebateRoom, 
+  onViewEvents, 
+  onResources, 
+  onViewTokens,
+  onPublicSpeaking
 }: StudentDashboardProps) => {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
-      {/* Header */}
+      {/* Header Section */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Your Stage. Your Voice. Your Growth</h1>
-        <p className="text-lg text-gray-600">Welcome Back!</p>
+        <h1 className="text-3xl font-bold text-gray-900">Welcome to MyDebate.AI</h1>
+        <p className="text-gray-600 mt-2">Enhance your debate skills with AI-powered tools and live competitions</p>
       </div>
 
-      {/* Quick Stats */}
-      <QuickStatsCard userTokens={userTokens} onViewTokens={onViewTokens} />
+      {/* Stats Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="card-shadow">
+          <CardHeader>
+            <CardTitle>Tokens Available</CardTitle>
+            <CardDescription>Your current balance</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-4">
+              <Coins className="h-8 w-8 text-yellow-500" />
+              <span className="text-2xl font-semibold">{userTokens}</span>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Main Menu Options */}
+        <Card className="card-shadow">
+          <CardHeader>
+            <CardTitle>Debates Completed</CardTitle>
+            <CardDescription>Total debates you've participated in</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <span className="text-2xl font-semibold">42</span>
+          </CardContent>
+        </Card>
+
+        <Card className="card-shadow">
+          <CardHeader>
+            <CardTitle>Average Score</CardTitle>
+            <CardDescription>Your average score in debates</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <span className="text-2xl font-semibold">86%</span>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Menu */}
       <MainMenuCard 
         onStartDebate={onStartDebate}
         onDebateLive={onDebateLive}
         onCreateDebateRoom={onCreateDebateRoom}
         onViewEvents={onViewEvents}
         onResources={onResources}
+        onPublicSpeaking={onPublicSpeaking}
       />
 
-      {/* Freud Theory Skills Progress & Recent Debates */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <FreudAnalysisCard />
-        <RecentDebatesCard />
-      </div>
+      {/* Quick Tips Section */}
+      <Card className="card-shadow border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+        <CardHeader>
+          <CardTitle>🚀 Quick Tips to Improve</CardTitle>
+          <CardDescription>Enhance your debate skills with these tips</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="list-disc pl-5 space-y-2">
+            <li>Research your topic thoroughly</li>
+            <li>Practice your speaking and delivery</li>
+            <li>Listen actively to your opponent</li>
+            <li>Structure your arguments logically</li>
+            <li>Use evidence to support your claims</li>
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   );
 };

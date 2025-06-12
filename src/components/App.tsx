@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import ViewManager from '@/components/ViewManager';
@@ -93,7 +92,10 @@ const App = () => {
           selectedProcedureType={selectedProcedureType}
           selectedLanguage={selectedLanguage}
           selectedDebateFormat={selectedDebateFormat}
-          handlers={handlers}
+          handlers={{
+            ...handlers,
+            handlePublicSpeaking: handlers.handlePublicSpeaking
+          }}
         />
       </main>
     </div>

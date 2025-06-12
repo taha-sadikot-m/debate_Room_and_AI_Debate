@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
 
@@ -148,6 +147,10 @@ export const useAppHandlers = ({
     setCurrentView('live-debate-selection');
   };
 
+  const handlePublicSpeaking = () => {
+    setCurrentView('public-speaking');
+  };
+
   return {
     handleStartDebate,
     handleJoinMUN,
@@ -167,6 +170,7 @@ export const useAppHandlers = ({
     handleBackToDashboard,
     handleBackToCommittees,
     handleLiveDebateFormatSelect,
-    handleDebateLive
+    handleDebateLive,
+    handlePublicSpeaking
   };
 };

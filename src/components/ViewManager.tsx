@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import StudentDashboard from '@/components/StudentDashboard';
 import TeacherDashboard from '@/components/TeacherDashboard';
@@ -11,6 +10,7 @@ import Resources from '@/components/Resources';
 import ScoresTokens from '@/components/ScoresTokens';
 import CreateCommittee from '@/components/CreateCommittee';
 import LiveDebateSelection from '@/components/LiveDebateSelection';
+import PublicSpeakingActivities from '@/components/PublicSpeakingActivities';
 
 interface Topic {
   id: string;
@@ -185,6 +185,9 @@ const ViewManager = ({
 
     case 'scores':
       return <ScoresTokens userTokens={userTokens} onBack={handleBackToDashboard} />;
+
+    case 'public-speaking':
+      return <PublicSpeakingActivities onBack={handleBackToDashboard} />;
 
     default:
       return null;

@@ -1,4 +1,3 @@
-
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bot, Users, Settings, Calendar, BookOpen, Zap } from 'lucide-react';
 
@@ -8,6 +7,7 @@ interface MainMenuCardProps {
   onCreateDebateRoom: () => void;
   onViewEvents: () => void;
   onResources: () => void;
+  onPublicSpeaking: () => void;
 }
 
 const MainMenuCard = ({ 
@@ -15,7 +15,8 @@ const MainMenuCard = ({
   onDebateLive,
   onCreateDebateRoom, 
   onViewEvents, 
-  onResources 
+  onResources,
+  onPublicSpeaking
 }: MainMenuCardProps) => {
   const menuItems = [
     {
@@ -62,6 +63,15 @@ const MainMenuCard = ({
       borderColor: 'border-blue-200',
       bgGradient: 'from-blue-50 to-white',
       iconBg: 'bg-blue-500'
+    },
+    {
+      icon: Users,
+      title: '🎭 Public Speaking',
+      description: 'Group discussions, JAM, Best Manager & more activities',
+      onClick: onPublicSpeaking,
+      borderColor: 'border-pink-200',
+      bgGradient: 'from-pink-50 to-white',
+      iconBg: 'bg-pink-500'
     }
   ];
 
