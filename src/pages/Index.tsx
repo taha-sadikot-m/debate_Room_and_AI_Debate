@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import StudentDashboard from '@/components/StudentDashboard';
@@ -32,19 +31,22 @@ interface Topic {
   };
 }
 
-// Mock user object for navigation
+// Mock user object for navigation - fixed to match User type
 const mockUser = {
   id: 'mock-user-id',
   email: 'user@example.com',
   user_metadata: {
     full_name: 'Demo User'
-  }
+  },
+  app_metadata: {},
+  aud: 'authenticated',
+  created_at: new Date().toISOString()
 };
 
 const Index = () => {
   const [userRole, setUserRole] = useState<'student' | 'teacher'>('student');
   const [userTokens, setUserTokens] = useState(156);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'difficulty' | 'topics' | 'opponents' | 'debate' | 'mun-committees' | 'mun' | 'pricing' | 'resources' | 'scores' | 'procedure-selection' | 'rules' | 'foreign-policy' | 'create-committee'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'difficulty' | 'topics' | 'opponents' | 'debate' | 'mun-committees' | 'mun' | 'pricing' | 'resources' | 'scores' | 'procedure-selection' | 'rules' | 'foreign-policy' | 'create-committee' | 'create-debate-room' | 'events'>('dashboard');
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Easy');
   const [selectedTheme, setSelectedTheme] = useState<string>('');
@@ -61,20 +63,16 @@ const Index = () => {
     setCurrentView('procedure-selection');
   };
 
+  const handleCreateDebateRoom = () => {
+    setCurrentView('create-debate-room');
+  };
+
+  const handleViewEvents = () => {
+    setCurrentView('events');
+  };
+
   const handleViewScores = () => {
     setCurrentView('scores');
-  };
-
-  const handleLearnForeignPolicy = () => {
-    setCurrentView('foreign-policy');
-  };
-
-  const handleViewRules = () => {
-    setCurrentView('rules');
-  };
-
-  const handleCreateCommittee = () => {
-    setCurrentView('create-committee');
   };
 
   const handleResources = () => {
@@ -177,16 +175,37 @@ const Index = () => {
             userTokens={userTokens} 
             onStartDebate={handleStartDebate}
             onJoinMUN={handleJoinMUN}
-            onViewScores={handleViewScores}
-            onLearnForeignPolicy={handleLearnForeignPolicy}
-            onViewRules={handleViewRules}
-            onCreateCommittee={handleCreateCommittee}
+            onCreateDebateRoom={handleCreateDebateRoom}
+            onViewEvents={handleViewEvents}
             onResources={handleResources}
           />
         )}
         
         {currentView === 'dashboard' && userRole === 'teacher' && (
           <TeacherDashboard />
+        )}
+
+        {currentView === 'create-debate-room' && (
+          <CreateCommittee 
+            onBack={handleBackToDashboard}
+          />
+        )}
+
+        {currentView === 'events' && (
+          <div className="max-w-6xl mx-auto p-6">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">🎪 Recent MUN Events</h1>
+                <p className="text-gray-600 mt-2">Upcoming and recent Model UN conferences</p>
+              </div>
+              <Button variant="outline" onClick={handleBackToDashboard}>
+                Back
+              </Button>
+            </div>
+            <div className="text-center text-gray-500 mt-20">
+              <p>Events feature coming soon!</p>
+            </div>
+          </div>
         )}
 
         {currentView === 'procedure-selection' && (

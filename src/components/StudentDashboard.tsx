@@ -18,17 +18,17 @@ import {
   BookOpen,
   Globe,
   Users,
-  Settings
+  Settings,
+  Calendar,
+  Sword
 } from 'lucide-react';
 
 interface StudentDashboardProps {
   userTokens: number;
   onStartDebate: () => void;
   onJoinMUN: () => void;
-  onViewScores: () => void;
-  onLearnForeignPolicy: () => void;
-  onViewRules: () => void;
-  onCreateCommittee: () => void;
+  onCreateDebateRoom: () => void;
+  onViewEvents: () => void;
   onResources: () => void;
 }
 
@@ -36,10 +36,8 @@ const StudentDashboard = ({
   userTokens, 
   onStartDebate,
   onJoinMUN,
-  onViewScores,
-  onLearnForeignPolicy,
-  onViewRules,
-  onCreateCommittee,
+  onCreateDebateRoom,
+  onViewEvents,
   onResources
 }: StudentDashboardProps) => {
   const skillProgress = [
@@ -121,16 +119,16 @@ const StudentDashboard = ({
         </Card>
       </div>
 
-      {/* Main Menu Options */}
+      {/* Main Menu Options - Updated Structure */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="card-shadow-lg border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onStartDebate}>
           <CardHeader className="text-center">
             <div className="mx-auto gradient-indigo p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-              <Mic className="h-8 w-8 text-white" />
+              <Sword className="h-8 w-8 text-white" />
             </div>
-            <CardTitle className="text-xl">📌 Start Debate</CardTitle>
+            <CardTitle className="text-xl">⚔️ Start Debate</CardTitle>
             <CardDescription>
-              AI voice opponent with live speech-to-text
+              1v1 debates or challenge AI opponents
             </CardDescription>
           </CardHeader>
         </Card>
@@ -142,43 +140,31 @@ const StudentDashboard = ({
             </div>
             <CardTitle className="text-xl">🌐 Join MUN</CardTitle>
             <CardDescription>
-              UNA-USA or Indian Parliamentary procedures
+              Indian Parliamentary or UN committee procedures
             </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card className="card-shadow-lg border-2 border-green-200 bg-gradient-to-br from-green-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onLearnForeignPolicy}>
+        <Card className="card-shadow-lg border-2 border-green-200 bg-gradient-to-br from-green-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onCreateDebateRoom}>
           <CardHeader className="text-center">
             <div className="mx-auto bg-green-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-              <GraduationCap className="h-8 w-8 text-white" />
-            </div>
-            <CardTitle className="text-xl">🎓 Learn Foreign Policy</CardTitle>
-            <CardDescription>
-              Country positions & bloc strategies
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Card className="card-shadow-lg border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onViewRules}>
-          <CardHeader className="text-center">
-            <div className="mx-auto bg-orange-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-              <BookOpen className="h-8 w-8 text-white" />
-            </div>
-            <CardTitle className="text-xl">📘 Rules & Procedures</CardTitle>
-            <CardDescription>
-              UNA-USA & Indian Parliamentary rules
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Card className="card-shadow-lg border-2 border-red-200 bg-gradient-to-br from-red-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onCreateCommittee}>
-          <CardHeader className="text-center">
-            <div className="mx-auto bg-red-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
               <Settings className="h-8 w-8 text-white" />
             </div>
-            <CardTitle className="text-xl">🏛️ Create Committee</CardTitle>
+            <CardTitle className="text-xl">🏛️ Create Debate Room</CardTitle>
             <CardDescription>
-              Set up your own MUN committee
+              Set up custom topics and debate formats
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card className="card-shadow-lg border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onViewEvents}>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-orange-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <Calendar className="h-8 w-8 text-white" />
+            </div>
+            <CardTitle className="text-xl">🎪 Events</CardTitle>
+            <CardDescription>
+              Recent MUNs, places, and modes
             </CardDescription>
           </CardHeader>
         </Card>
@@ -190,7 +176,7 @@ const StudentDashboard = ({
             </div>
             <CardTitle className="text-xl">📚 Resources</CardTitle>
             <CardDescription>
-              Famous speeches, blogs & videos
+              Rules, foreign policy, blogs, videos & speech feedback
             </CardDescription>
           </CardHeader>
         </Card>
