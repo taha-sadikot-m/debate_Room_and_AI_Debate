@@ -22,7 +22,7 @@ const PricingPage = ({ onBack }: PricingPageProps) => {
         'Live debates with users (5 per month)',
         'Basic AI feedback',
         'Standard progress tracking',
-        'Access to 10+ languages'
+        'Access to all languages for live debates'
       ],
       limitations: [
         'Limited advanced features',
@@ -62,7 +62,7 @@ const PricingPage = ({ onBack }: PricingPageProps) => {
       indianPrice: '₹8,000',
       features: [
         'Everything in Pro',
-        '5 personal 1-on-1 training sessions',
+        '5 personal 1-on-1 training sessions per year',
         'Institution/Corporate features',
         'Full campus recruitment training',
         'Multi-student management',
@@ -78,29 +78,37 @@ const PricingPage = ({ onBack }: PricingPageProps) => {
 
   const trainingOptions = [
     {
-      title: 'Campus Interview Training',
-      description: 'Complete preparation for campus placements',
+      title: 'Job Fit Program (Campus Interview)',
+      description: 'Complete preparation for campus placements and job interviews',
       icon: GraduationCap,
       color: 'bg-blue-100 text-blue-600',
+      batchSize: '30 students per batch',
       features: [
         'Mock interview sessions',
-        'Technical & HR rounds',
+        'Technical & HR rounds preparation',
         'Group discussion practice',
-        'Presentation skills',
-        'Industry-specific scenarios'
+        'Presentation skills development',
+        'Industry-specific scenarios',
+        'Resume building workshops',
+        'Body language and communication',
+        'Salary negotiation techniques'
       ]
     },
     {
-      title: 'School Students Program',
-      description: 'Age-appropriate debate and communication skills',
+      title: 'Young Leaders Program (School Students)',
+      description: 'Comprehensive development program for young minds',
       icon: Users,
       color: 'bg-green-100 text-green-600',
+      batchSize: '30 students per batch',
       features: [
+        'Life skills development',
+        'Financial literacy basics',
+        'Civic literacy and citizenship',
+        'Age-appropriate sex education',
         'Basic debate fundamentals',
         'Public speaking confidence',
         'Critical thinking development',
-        'Age-appropriate topics',
-        'Progress tracking for teachers'
+        'Leadership and teamwork skills'
       ]
     },
     {
@@ -108,12 +116,16 @@ const PricingPage = ({ onBack }: PricingPageProps) => {
       description: 'Professional-level debate and communication',
       icon: Star,
       color: 'bg-purple-100 text-purple-600',
+      batchSize: '30 students per batch',
       features: [
         'Advanced argumentation techniques',
         'Research and fact-checking',
         'Professional presentation skills',
         'Industry case studies',
-        'Career-focused training'
+        'Career-focused training',
+        'Professional networking skills',
+        'Advanced public speaking',
+        'Leadership development'
       ]
     }
   ];
@@ -211,6 +223,7 @@ const PricingPage = ({ onBack }: PricingPageProps) => {
                   </div>
                   <CardTitle className="text-xl font-bold text-gray-900">{training.title}</CardTitle>
                   <p className="text-gray-600 mt-2">{training.description}</p>
+                  <Badge className="mt-2 bg-indigo-100 text-indigo-700">{training.batchSize}</Badge>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
