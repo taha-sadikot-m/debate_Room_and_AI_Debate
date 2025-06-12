@@ -139,6 +139,10 @@ export const useAppHandlers = ({
     setCurrentView('debate');
   };
 
+  const handleViewTokens = () => {
+    setCurrentView('scores');
+  };
+
   return {
     handleStartDebate,
     handleJoinMUN,
@@ -156,6 +160,7 @@ export const useAppHandlers = ({
     handleProcedureSelect,
     handleBackToDashboard,
     handleBackToCommittees,
-    handleLiveDebateFormatSelect
+    handleLiveDebateFormatSelect,
+    handleViewTokens
   };
 };
