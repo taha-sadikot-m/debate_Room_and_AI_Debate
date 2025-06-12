@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Brain, MessageSquare, Volume2 } from 'lucide-react';
+import VoiceSamples from './VoiceSamples';
 
 interface AIResponseProps {
   aiResponse: string;
@@ -50,34 +51,39 @@ const AIResponse = ({ aiResponse, onNextRound }: AIResponseProps) => {
   if (!aiResponse) return null;
 
   return (
-    <Card className="card-shadow">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Brain className="h-5 w-5 text-purple-600" />
-          <span>AI Opponent Response</span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={playAIResponse}
-            className="ml-auto"
-          >
-            <Volume2 className="h-4 w-4 mr-1" />
-            Listen
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="bg-purple-50 p-4 rounded-lg">
-          <p className="text-purple-800">{aiResponse}</p>
-        </div>
-        <div className="mt-4 text-center">
-          <Button onClick={onNextRound}>
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Continue Debate
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <Card className="card-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Brain className="h-5 w-5 text-purple-600" />
+            <span>AI Opponent Response</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={playAIResponse}
+              className="ml-auto"
+            >
+              <Volume2 className="h-4 w-4 mr-1" />
+              Listen
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-purple-50 p-4 rounded-lg">
+            <p className="text-purple-800">{aiResponse}</p>
+          </div>
+          <div className="mt-4 text-center">
+            <Button onClick={onNextRound}>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Continue Debate
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Voice Samples Section - shown after AI response */}
+      <VoiceSamples />
+    </div>
   );
 };
 

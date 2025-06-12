@@ -21,8 +21,7 @@ import {
   Users,
   Settings,
   Calendar,
-  Sword,
-  Volume2
+  Sword
 } from 'lucide-react';
 
 interface StudentDashboardProps {
@@ -54,68 +53,12 @@ const StudentDashboard = ({
     { topic: 'Digital Privacy', opponent: 'AI Assistant', result: 'Win', freudScore: { id: 7, ego: 9, superego: 6 }, tokens: 12 },
   ];
 
-  const playSampleVoice = () => {
-    // Sample text with Indian accent characteristics
-    const sampleText = "Namaste! I am your AI debate opponent. I believe that renewable energy is not just an environmental necessity, but also an economic opportunity for developing nations like India. We must transition to clean energy while ensuring job creation and sustainable growth. What are your thoughts on this perspective?";
-    
-    if ('speechSynthesis' in window) {
-      // Cancel any ongoing speech
-      speechSynthesis.cancel();
-      
-      const utterance = new SpeechSynthesisUtterance(sampleText);
-      
-      // Try to find an Indian accent voice
-      const voices = speechSynthesis.getVoices();
-      const indianVoice = voices.find(voice => 
-        voice.lang.includes('en-IN') || 
-        voice.name.toLowerCase().includes('indian') ||
-        voice.name.toLowerCase().includes('ravi') ||
-        voice.name.toLowerCase().includes('aditi')
-      );
-      
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-      } else {
-        // Fallback to a British or Australian accent which is closer to Indian English
-        const fallbackVoice = voices.find(voice => 
-          voice.lang.includes('en-GB') || 
-          voice.lang.includes('en-AU')
-        );
-        if (fallbackVoice) {
-          utterance.voice = fallbackVoice;
-        }
-      }
-      
-      // Adjust speech parameters for Indian accent characteristics
-      utterance.rate = 0.9; // Slightly slower
-      utterance.pitch = 1.1; // Slightly higher pitch
-      utterance.volume = 0.8;
-      
-      speechSynthesis.speak(utterance);
-    }
-  };
-
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* Header */}
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Your Stage. Your Voice. Your Growth</h1>
         <p className="text-lg text-gray-600">Welcome Back!</p>
-        
-        {/* Sample Voice Demo */}
-        <div className="mt-4">
-          <Button
-            onClick={playSampleVoice}
-            variant="outline"
-            className="bg-purple-50 border-purple-300 text-purple-700 hover:bg-purple-100"
-          >
-            <Volume2 className="h-4 w-4 mr-2" />
-            🎤 Sample AI Voice (Indian Accent)
-          </Button>
-          <p className="text-sm text-gray-500 mt-2">
-            Listen to how your AI opponent will sound during debates
-          </p>
-        </div>
       </div>
 
       {/* Quick Stats */}
@@ -187,6 +130,18 @@ const StudentDashboard = ({
             <CardTitle className="text-xl">⚔️ Start Debate</CardTitle>
             <CardDescription>
               1v1 debates or challenge AI opponents
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card className="card-shadow-lg border-2 border-green-200 bg-gradient-to-br from-green-50 to-white hover:shadow-xl transition-all cursor-pointer">
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-green-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <Sword className="h-8 w-8 text-white" />
+            </div>
+            <CardTitle className="text-xl">🆓 Free AI Debates</CardTitle>
+            <CardDescription>
+              Unlimited debates with AI opponents
             </CardDescription>
           </CardHeader>
         </Card>
