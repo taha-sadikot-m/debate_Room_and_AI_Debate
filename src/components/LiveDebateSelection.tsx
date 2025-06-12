@@ -3,8 +3,21 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Globe, Shield, ArrowLeft } from 'lucide-react';
+import { Users, Globe, Shield, ArrowLeft, Target, Trophy } from 'lucide-react';
 import LanguageSelection from './LanguageSelection';
+import DifficultySelection from './DifficultySelection';
+import LiveDebateRoom from './LiveDebateRoom';
+import { Topic } from '@/data/topics';
+
+interface OnlineUser {
+  id: string;
+  name: string;
+  avatar?: string;
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  tokens: number;
+  country: string;
+  status: 'available' | 'in-debate' | 'away';
+}
 
 interface LiveDebateSelectionProps {
   onFormatSelect: (format: '1v1' | '3v3', language: string) => void;
@@ -12,26 +25,68 @@ interface LiveDebateSelectionProps {
 }
 
 const LiveDebateSelection = ({ onFormatSelect, onBack }: LiveDebateSelectionProps) => {
-  const [showLanguageSelection, setShowLanguageSelection] = useState(false);
+  const [currentStep, setCurrentStep] = useState<'format' | 'language' | 'difficulty' | 'room'>('format');
   const [selectedFormat, setSelectedFormat] = useState<'1v1' | '3v3' | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Easy');
+  const [selectedTheme, setSelectedTheme] = useState<string>('');
 
   const handleFormatSelect = (format: '1v1' | '3v3') => {
     setSelectedFormat(format);
-    setShowLanguageSelection(true);
+    setCurrentStep('language');
   };
 
   const handleLanguageSelect = (language: string) => {
-    if (selectedFormat) {
-      onFormatSelect(selectedFormat, language);
-    }
+    setSelectedLanguage(language);
+    setCurrentStep('difficulty');
+  };
+
+  const handleDifficultySelect = (difficulty: 'Easy' | 'Medium' | 'Hard', theme: string) => {
+    setSelectedDifficulty(difficulty);
+    setSelectedTheme(theme);
+    setCurrentStep('room');
+  };
+
+  const handleStartDebate = (topic: Topic, opponent: OnlineUser) => {
+    // Here you would typically navigate to the actual debate room
+    console.log('Starting debate:', { topic, opponent, format: selectedFormat, language: selectedLanguage });
+    onFormatSelect(selectedFormat!, selectedLanguage);
   };
 
   const handleBackToFormats = () => {
-    setShowLanguageSelection(false);
+    setCurrentStep('format');
     setSelectedFormat(null);
   };
 
-  if (showLanguageSelection) {
+  const handleBackToLanguage = () => {
+    setCurrentStep('language');
+  };
+
+  const handleBackToDifficulty = () => {
+    setCurrentStep('difficulty');
+  };
+
+  if (currentStep === 'room') {
+    return (
+      <LiveDebateRoom
+        difficulty={selectedDifficulty}
+        theme={selectedTheme}
+        onBack={handleBackToDifficulty}
+        onStartDebate={handleStartDebate}
+      />
+    );
+  }
+
+  if (currentStep === 'difficulty') {
+    return (
+      <DifficultySelection
+        onDifficultySelect={handleDifficultySelect}
+        onBack={handleBackToLanguage}
+      />
+    );
+  }
+
+  if (currentStep === 'language') {
     return (
       <LanguageSelection 
         onLanguageSelect={handleLanguageSelect}
@@ -45,7 +100,7 @@ const LiveDebateSelection = ({ onFormatSelect, onBack }: LiveDebateSelectionProp
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Choose Live Debate Format</h1>
-          <p className="text-gray-600 mt-2">Select your debate format and language</p>
+          <p className="text-gray-600 mt-2">Select your debate format and connect with real opponents</p>
         </div>
         <Button variant="outline" onClick={onBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -74,6 +129,13 @@ const LiveDebateSelection = ({ onFormatSelect, onBack }: LiveDebateSelectionProp
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Participants</span>
                 <Badge variant="outline">2 debaters</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">Token Reward</span>
+                <Badge className="bg-yellow-100 text-yellow-700">
+                  <Trophy className="h-3 w-3 mr-1" />
+                  5-15 tokens
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">AI Moderation</span>
@@ -119,6 +181,13 @@ const LiveDebateSelection = ({ onFormatSelect, onBack }: LiveDebateSelectionProp
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Participants</span>
                 <Badge variant="outline">6 debaters</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">Token Reward</span>
+                <Badge className="bg-yellow-100 text-yellow-700">
+                  <Trophy className="h-3 w-3 mr-1" />
+                  10-20 tokens
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">AI Moderation</span>
@@ -171,10 +240,10 @@ const LiveDebateSelection = ({ onFormatSelect, onBack }: LiveDebateSelectionProp
             </div>
             <div className="text-center">
               <div className="bg-purple-100 p-3 rounded-lg mb-2">
-                <Globe className="h-6 w-6 text-purple-600 mx-auto" />
+                <Target className="h-6 w-6 text-purple-600 mx-auto" />
               </div>
-              <h4 className="font-medium">Language Translation</h4>
-              <p className="text-sm text-gray-600">Real-time translation support</p>
+              <h4 className="font-medium">Performance Scoring</h4>
+              <p className="text-sm text-gray-600">Instant feedback and token rewards</p>
             </div>
           </div>
         </CardContent>

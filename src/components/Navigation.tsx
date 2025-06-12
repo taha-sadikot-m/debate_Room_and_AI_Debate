@@ -2,147 +2,112 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
-  MessageSquare, 
-  Trophy, 
-  User as UserIcon, 
-  Settings,
-  LogOut,
-  Crown,
-  Users
-} from 'lucide-react';
-import { User } from '@supabase/supabase-js';
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Coins, Crown, User, LogOut, Settings } from 'lucide-react';
 
 interface NavigationProps {
   userTokens: number;
   userRole: 'student' | 'teacher';
   onRoleSwitch: (role: 'student' | 'teacher') => void;
-  onGetPremium?: () => void;
+  onGetPremium: () => void;
   onSignOut: () => void;
-  user: User;
+  user: any;
 }
 
-const Navigation = ({ userTokens, userRole, onRoleSwitch, onGetPremium, onSignOut, user }: NavigationProps) => {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  const handleJoinCommunity = () => {
-    window.open('https://discord.gg/symdebate', '_blank');
-  };
-
+const Navigation = ({ 
+  userTokens, 
+  userRole, 
+  onRoleSwitch, 
+  onGetPremium, 
+  onSignOut,
+  user 
+}: NavigationProps) => {
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo and Brand */}
-          <div className="flex items-center space-x-3">
-            <div className="gradient-indigo p-2 rounded-lg">
-              <MessageSquare className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">mydebate.ai</h1>
-              <p className="text-xs text-gray-500">AI-Powered Debate Platform</p>
-            </div>
+    <nav className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        {/* Logo */}
+        <div className="flex items-center space-x-3">
+          <img 
+            src="/lovable-uploads/236def80-ed34-4ee1-8fe5-ec9afc644cc3.png" 
+            alt="MyDebate.ai Logo" 
+            className="h-10 w-10"
+          />
+          <h1 className="text-xl font-bold text-gray-900">MyDebate.ai</h1>
+        </div>
+
+        {/* Center - Role Switch */}
+        <div className="flex items-center space-x-2">
+          <Button
+            variant={userRole === 'student' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onRoleSwitch('student')}
+          >
+            Student
+          </Button>
+          <Button
+            variant={userRole === 'teacher' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onRoleSwitch('teacher')}
+          >
+            Teacher
+          </Button>
+        </div>
+
+        {/* Right Side */}
+        <div className="flex items-center space-x-4">
+          {/* Tokens */}
+          <div className="flex items-center space-x-2">
+            <Coins className="h-5 w-5 text-yellow-600" />
+            <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
+              {userTokens} tokens
+            </Badge>
           </div>
 
-          {/* User Info and Controls */}
-          <div className="flex items-center space-x-4">
-            {/* Tokens Display */}
-            <div className="flex items-center space-x-2 bg-yellow-50 px-3 py-1 rounded-full">
-              <Trophy className="h-4 w-4 text-yellow-600" />
-              <span className="text-sm font-medium text-yellow-700">{userTokens} tokens</span>
-            </div>
+          {/* Premium Button */}
+          <Button 
+            size="sm" 
+            onClick={onGetPremium}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          >
+            <Crown className="h-4 w-4 mr-2" />
+            Get Premium
+          </Button>
 
-            {/* Join Community Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleJoinCommunity}
-              className="text-purple-600 border-purple-300 hover:bg-purple-50"
-            >
-              <Users className="h-4 w-4 mr-1" />
-              Join SYM Community
-            </Button>
-
-            {/* Get Premium Button */}
-            {onGetPremium && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onGetPremium}
-                className="gradient-indigo text-white border-none hover:opacity-90"
-              >
-                <Crown className="h-4 w-4 mr-1" />
-                Get Premium
+          {/* User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.user_metadata?.avatar_url} />
+                  <AvatarFallback>
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
               </Button>
-            )}
-
-            {/* Role Switcher */}
-            <div className="flex items-center space-x-2">
-              <Button
-                variant={userRole === 'student' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => onRoleSwitch('student')}
-              >
-                Student
-              </Button>
-              <Button
-                variant={userRole === 'teacher' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => onRoleSwitch('teacher')}
-                className="relative"
-              >
-                <Crown className="h-4 w-4 mr-1" />
-                Teacher
-              </Button>
-            </div>
-
-            {/* User Profile */}
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center space-x-2"
-              >
-                {user.user_metadata?.avatar_url ? (
-                  <img 
-                    src={user.user_metadata.avatar_url} 
-                    alt="Profile" 
-                    className="w-8 h-8 rounded-full"
-                  />
-                ) : (
-                  <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                    <UserIcon className="h-4 w-4 text-indigo-600" />
-                  </div>
-                )}
-                <span className="text-sm font-medium text-gray-700">
-                  {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
-                </span>
-              </Button>
-
-              {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">
-                      {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                    </p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
-                  <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2">
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </button>
-                  <button 
-                    onClick={onSignOut}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>{user?.user_metadata?.full_name || 'Demo User'}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </nav>
