@@ -1,9 +1,10 @@
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, User, Settings, Calendar, BookOpen } from 'lucide-react';
+import { Bot, Users, Settings, Calendar, BookOpen, Zap } from 'lucide-react';
 
 interface MainMenuCardProps {
   onStartDebate: () => void;
+  onDebateLive: () => void;
   onCreateDebateRoom: () => void;
   onViewEvents: () => void;
   onResources: () => void;
@@ -11,6 +12,7 @@ interface MainMenuCardProps {
 
 const MainMenuCard = ({ 
   onStartDebate, 
+  onDebateLive,
   onCreateDebateRoom, 
   onViewEvents, 
   onResources 
@@ -18,18 +20,18 @@ const MainMenuCard = ({
   const menuItems = [
     {
       icon: Bot,
-      title: '🤖 Debate with AI',
-      description: 'Challenge AI opponents with various difficulty levels',
+      title: '🤖 Start Debate',
+      description: 'Debate with AI - Practice with intelligent opponents',
       onClick: onStartDebate,
       borderColor: 'border-indigo-200',
       bgGradient: 'from-indigo-50 to-white',
       iconBg: 'gradient-indigo'
     },
     {
-      icon: User,
-      title: '👥 Debate with User',
-      description: '1v1 debates with other students and debaters',
-      onClick: onStartDebate,
+      icon: Zap,
+      title: '⚡ Debate Live',
+      description: 'Live debates with real people in any language',
+      onClick: onDebateLive,
       borderColor: 'border-green-200',
       bgGradient: 'from-green-50 to-white',
       iconBg: 'bg-green-500'
@@ -39,9 +41,9 @@ const MainMenuCard = ({
       title: '🏛️ Create Debate Room',
       description: 'Set up custom topics and debate formats',
       onClick: onCreateDebateRoom,
-      borderColor: 'border-green-200',
-      bgGradient: 'from-green-50 to-white',
-      iconBg: 'bg-green-500'
+      borderColor: 'border-purple-200',
+      bgGradient: 'from-purple-50 to-white',
+      iconBg: 'bg-purple-500'
     },
     {
       icon: Calendar,

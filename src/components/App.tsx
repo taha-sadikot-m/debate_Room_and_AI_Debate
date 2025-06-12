@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import ViewManager from '@/components/ViewManager';
@@ -42,6 +41,8 @@ const App = () => {
   const [selectedLiveSession, setSelectedLiveSession] = useState<LiveMunSession | null>(null);
   const [debateType, setDebateType] = useState<'ai' | '1v1' | 'mun'>('ai');
   const [selectedProcedureType, setSelectedProcedureType] = useState<'UNA-USA' | 'Indian Parliamentary' | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
+  const [selectedDebateFormat, setSelectedDebateFormat] = useState<'1v1' | '3v3'>('1v1');
 
   const handlers = useAppHandlers({
     setCurrentView,
@@ -52,7 +53,9 @@ const App = () => {
     setSelectedCommittee,
     setSelectedLiveSession,
     setSelectedProcedureType,
-    setUserTokens
+    setUserTokens,
+    setSelectedLanguage,
+    setSelectedDebateFormat
   });
 
   const handleGetPremium = () => {
@@ -62,6 +65,10 @@ const App = () => {
   const handleSignOut = () => {
     // Mock sign out - just refresh the page
     window.location.reload();
+  };
+
+  const handleDebateLive = () => {
+    setCurrentView('live-debate-selection');
   };
 
   return (
@@ -87,7 +94,9 @@ const App = () => {
           selectedLiveSession={selectedLiveSession}
           debateType={debateType}
           selectedProcedureType={selectedProcedureType}
-          handlers={handlers}
+          selectedLanguage={selectedLanguage}
+          selectedDebateFormat={selectedDebateFormat}
+          handlers={{...handlers, handleDebateLive}}
         />
       </main>
     </div>

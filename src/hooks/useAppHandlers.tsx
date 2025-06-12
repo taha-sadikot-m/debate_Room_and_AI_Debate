@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
 
@@ -26,6 +25,8 @@ interface UseAppHandlersProps {
   setSelectedLiveSession: (session: LiveMunSession | null) => void;
   setSelectedProcedureType: (type: 'UNA-USA' | 'Indian Parliamentary' | null) => void;
   setUserTokens: (tokens: number | ((prev: number) => number)) => void;
+  setSelectedLanguage: (language: string) => void;
+  setSelectedDebateFormat: (format: '1v1' | '3v3') => void;
 }
 
 export const useAppHandlers = ({
@@ -37,7 +38,9 @@ export const useAppHandlers = ({
   setSelectedCommittee,
   setSelectedLiveSession,
   setSelectedProcedureType,
-  setUserTokens
+  setUserTokens,
+  setSelectedLanguage,
+  setSelectedDebateFormat
 }: UseAppHandlersProps) => {
   const handleStartDebate = () => {
     setCurrentView('difficulty');
@@ -129,6 +132,13 @@ export const useAppHandlers = ({
     setSelectedLiveSession(null);
   };
 
+  const handleLiveDebateFormatSelect = (format: '1v1' | '3v3', language: string) => {
+    setSelectedDebateFormat(format);
+    setSelectedLanguage(language);
+    setDebateType('1v1'); // Set debate type for live debates
+    setCurrentView('debate');
+  };
+
   return {
     handleStartDebate,
     handleJoinMUN,
@@ -145,6 +155,7 @@ export const useAppHandlers = ({
     handleBackToDifficulty,
     handleProcedureSelect,
     handleBackToDashboard,
-    handleBackToCommittees
+    handleBackToCommittees,
+    handleLiveDebateFormatSelect
   };
 };

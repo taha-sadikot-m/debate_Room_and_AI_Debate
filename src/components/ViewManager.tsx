@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import StudentDashboard from '@/components/StudentDashboard';
 import TeacherDashboard from '@/components/TeacherDashboard';
@@ -10,6 +9,7 @@ import PricingPage from '@/components/PricingPage';
 import Resources from '@/components/Resources';
 import ScoresTokens from '@/components/ScoresTokens';
 import CreateCommittee from '@/components/CreateCommittee';
+import LiveDebateSelection from '@/components/LiveDebateSelection';
 
 interface Topic {
   id: string;
@@ -36,8 +36,11 @@ interface ViewManagerProps {
   selectedLiveSession: any;
   debateType: 'ai' | '1v1' | 'mun';
   selectedProcedureType: 'UNA-USA' | 'Indian Parliamentary' | null;
+  selectedLanguage: string;
+  selectedDebateFormat: '1v1' | '3v3';
   handlers: {
     handleStartDebate: () => void;
+    handleDebateLive: () => void;
     handleJoinMUN: () => void;
     handleCreateDebateRoom: () => void;
     handleViewEvents: () => void;
@@ -53,6 +56,7 @@ interface ViewManagerProps {
     handleProcedureSelect: (procedureType: 'UNA-USA' | 'Indian Parliamentary') => void;
     handleBackToDashboard: () => void;
     handleBackToCommittees: () => void;
+    handleLiveDebateFormatSelect: (format: '1v1' | '3v3', language: string) => void;
   };
 }
 
@@ -67,10 +71,13 @@ const ViewManager = ({
   selectedLiveSession, 
   debateType, 
   selectedProcedureType,
+  selectedLanguage,
+  selectedDebateFormat,
   handlers 
 }: ViewManagerProps) => {
   const {
     handleStartDebate,
+    handleDebateLive,
     handleJoinMUN,
     handleCreateDebateRoom,
     handleViewEvents,
@@ -85,7 +92,8 @@ const ViewManager = ({
     handleBackToDifficulty,
     handleProcedureSelect,
     handleBackToDashboard,
-    handleBackToCommittees
+    handleBackToCommittees,
+    handleLiveDebateFormatSelect
   } = handlers;
 
   switch (currentView) {
@@ -94,6 +102,7 @@ const ViewManager = ({
         <StudentDashboard 
           userTokens={userTokens} 
           onStartDebate={handleStartDebate}
+          onDebateLive={handleDebateLive}
           onJoinMUN={handleJoinMUN}
           onCreateDebateRoom={handleCreateDebateRoom}
           onViewEvents={handleViewEvents}
@@ -101,6 +110,14 @@ const ViewManager = ({
         />
       ) : (
         <TeacherDashboard />
+      );
+
+    case 'live-debate-selection':
+      return (
+        <LiveDebateSelection
+          onFormatSelect={handleLiveDebateFormatSelect}
+          onBack={handleBackToDashboard}
+        />
       );
 
     case 'create-debate-room':
@@ -151,6 +168,7 @@ const ViewManager = ({
         <DebateRoom 
           debateType={debateType}
           topic={selectedTopic.title}
+          language={selectedLanguage}
           onExit={handleExitDebate}
         />
       ) : null;

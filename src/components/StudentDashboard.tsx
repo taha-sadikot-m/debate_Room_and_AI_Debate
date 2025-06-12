@@ -7,6 +7,7 @@ import RecentDebatesCard from '@/components/dashboard/RecentDebatesCard';
 interface StudentDashboardProps {
   userTokens: number;
   onStartDebate: () => void;
+  onDebateLive: () => void;
   onJoinMUN: () => void;
   onCreateDebateRoom: () => void;
   onViewEvents: () => void;
@@ -16,6 +17,7 @@ interface StudentDashboardProps {
 const StudentDashboard = ({ 
   userTokens, 
   onStartDebate,
+  onDebateLive,
   onJoinMUN,
   onCreateDebateRoom,
   onViewEvents,
@@ -35,6 +37,7 @@ const StudentDashboard = ({
       {/* Main Menu Options */}
       <MainMenuCard 
         onStartDebate={onStartDebate}
+        onDebateLive={onDebateLive}
         onCreateDebateRoom={onCreateDebateRoom}
         onViewEvents={onViewEvents}
         onResources={onResources}

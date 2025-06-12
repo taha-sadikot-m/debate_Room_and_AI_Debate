@@ -162,13 +162,13 @@ const DebateRoom = ({ debateType, topic, language = 'en', onExit }: DebateRoomPr
     setIsRecording(true);
     setIsTimerRunning(true);
     
-    // Random POI generation during speech (30% chance)
+    // Show POI only in the last 15-30 seconds of speech (30% chance)
     if (Math.random() < 0.3) {
       setTimeout(() => {
         const poi = debateAI.generatePOI();
         setCurrentPOI(poi);
         setShowPOI(true);
-      }, Math.random() * 30000 + 15000); // 15-45 seconds into speech
+      }, Math.random() * 15000 + 45000); // 45-60 seconds into speech (towards the end)
     }
 
     // Simulate speech recognition
