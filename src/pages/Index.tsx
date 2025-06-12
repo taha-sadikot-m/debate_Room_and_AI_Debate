@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import StudentDashboard from '@/components/StudentDashboard';
@@ -16,8 +17,6 @@ import RulesPage from '@/components/RulesPage';
 import ForeignPolicyLearning from '@/components/ForeignPolicyLearning';
 import CreateCommittee from '@/components/CreateCommittee';
 import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
-import AuthPage from '@/components/AuthPage';
-import { useAuth } from '@/hooks/useAuth';
 
 interface Topic {
   id: string;
@@ -32,6 +31,15 @@ interface Topic {
     con: string[];
   };
 }
+
+// Mock user object for navigation
+const mockUser = {
+  id: 'mock-user-id',
+  email: 'user@example.com',
+  user_metadata: {
+    full_name: 'Demo User'
+  }
+};
 
 const Index = () => {
   const [userRole, setUserRole] = useState<'student' | 'teacher'>('student');
@@ -147,22 +155,10 @@ const Index = () => {
     setCurrentView('pricing');
   };
 
-  const { user, loading: authLoading, signOut } = useAuth();
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <AuthPage onAuthSuccess={() => window.location.reload()} />;
-  }
+  const handleSignOut = () => {
+    // Mock sign out - just refresh the page
+    window.location.reload();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -171,8 +167,8 @@ const Index = () => {
         userRole={userRole} 
         onRoleSwitch={setUserRole}
         onGetPremium={handleGetPremium}
-        onSignOut={signOut}
-        user={user}
+        onSignOut={handleSignOut}
+        user={mockUser}
       />
       
       <main className="animate-fade-in">
