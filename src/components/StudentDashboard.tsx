@@ -21,7 +21,9 @@ import {
   Users,
   Settings,
   Calendar,
-  Sword
+  Sword,
+  Bot,
+  User
 } from 'lucide-react';
 
 interface StudentDashboardProps {
@@ -120,40 +122,28 @@ const StudentDashboard = ({
         </Card>
       </div>
 
-      {/* Main Menu Options - Updated Structure */}
+      {/* Main Menu Options */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="card-shadow-lg border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onStartDebate}>
           <CardHeader className="text-center">
             <div className="mx-auto gradient-indigo p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-              <Sword className="h-8 w-8 text-white" />
+              <Bot className="h-8 w-8 text-white" />
             </div>
-            <CardTitle className="text-xl">⚔️ Start Debate</CardTitle>
+            <CardTitle className="text-xl">🤖 Debate with AI</CardTitle>
             <CardDescription>
-              1v1 debates or challenge AI opponents
+              Challenge AI opponents with various difficulty levels
             </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card className="card-shadow-lg border-2 border-green-200 bg-gradient-to-br from-green-50 to-white hover:shadow-xl transition-all cursor-pointer">
+        <Card className="card-shadow-lg border-2 border-green-200 bg-gradient-to-br from-green-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onStartDebate}>
           <CardHeader className="text-center">
             <div className="mx-auto bg-green-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-              <Sword className="h-8 w-8 text-white" />
+              <User className="h-8 w-8 text-white" />
             </div>
-            <CardTitle className="text-xl">🆓 Free AI Debates</CardTitle>
+            <CardTitle className="text-xl">👥 Debate with User</CardTitle>
             <CardDescription>
-              Unlimited debates with AI opponents
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Card className="card-shadow-lg border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white hover:shadow-xl transition-all cursor-pointer" onClick={onJoinMUN}>
-          <CardHeader className="text-center">
-            <div className="mx-auto bg-purple-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-              <Globe className="h-8 w-8 text-white" />
-            </div>
-            <CardTitle className="text-xl">🌐 Join MUN</CardTitle>
-            <CardDescription>
-              Indian Parliamentary or UN committee procedures
+              1v1 debates with other students and debaters
             </CardDescription>
           </CardHeader>
         </Card>
@@ -177,7 +167,7 @@ const StudentDashboard = ({
             </div>
             <CardTitle className="text-xl">🎪 Events</CardTitle>
             <CardDescription>
-              Recent MUNs, places, and modes
+              Recent debates, competitions, and tournaments
             </CardDescription>
           </CardHeader>
         </Card>
@@ -189,7 +179,7 @@ const StudentDashboard = ({
             </div>
             <CardTitle className="text-xl">📚 Resources</CardTitle>
             <CardDescription>
-              Rules, foreign policy, blogs, videos & speech feedback
+              Rules, techniques, blogs, videos & speech feedback
             </CardDescription>
           </CardHeader>
         </Card>

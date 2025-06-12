@@ -6,16 +6,10 @@ import DifficultySelection from '@/components/DifficultySelection';
 import TopicSelection from '@/components/TopicSelection';
 import OpponentSelection from '@/components/OpponentSelection';
 import DebateRoom from '@/components/DebateRoom';
-import MunCommitteeSelection from '@/components/MunCommitteeSelection';
-import MunArena from '@/components/MunArena';
 import PricingPage from '@/components/PricingPage';
 import Resources from '@/components/Resources';
 import ScoresTokens from '@/components/ScoresTokens';
-import ProcedureSelection from '@/components/ProcedureSelection';
-import RulesPage from '@/components/RulesPage';
-import ForeignPolicyLearning from '@/components/ForeignPolicyLearning';
 import CreateCommittee from '@/components/CreateCommittee';
-import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
 
 interface Topic {
   id: string;
@@ -38,8 +32,8 @@ interface ViewManagerProps {
   selectedTopic: Topic | null;
   selectedDifficulty: 'Easy' | 'Medium' | 'Hard';
   selectedTheme: string;
-  selectedCommittee: MunCommittee | null;
-  selectedLiveSession: LiveMunSession | null;
+  selectedCommittee: any;
+  selectedLiveSession: any;
   debateType: 'ai' | '1v1' | 'mun';
   selectedProcedureType: 'UNA-USA' | 'Indian Parliamentary' | null;
   handlers: {
@@ -51,8 +45,8 @@ interface ViewManagerProps {
     handleDifficultySelect: (difficulty: 'Easy' | 'Medium' | 'Hard', theme: string) => void;
     handleTopicSelect: (topic: Topic) => void;
     handleOpponentSelect: (type: 'ai' | '1v1' | 'mun') => void;
-    handleCommitteeSelect: (committee: MunCommittee) => void;
-    handleJoinLiveSession: (session: LiveMunSession) => void;
+    handleCommitteeSelect: (committee: any) => void;
+    handleJoinLiveSession: (session: any) => void;
     handleExitDebate: () => void;
     handleBackToTopics: () => void;
     handleBackToDifficulty: () => void;
@@ -117,8 +111,8 @@ const ViewManager = ({
         <div className="max-w-6xl mx-auto p-6">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">🎪 Recent MUN Events</h1>
-              <p className="text-gray-600 mt-2">Upcoming and recent Model UN conferences</p>
+              <h1 className="text-3xl font-bold text-gray-900">🎪 Recent Debate Events</h1>
+              <p className="text-gray-600 mt-2">Upcoming and recent debate competitions</p>
             </div>
             <Button variant="outline" onClick={handleBackToDashboard}>
               Back
@@ -129,18 +123,6 @@ const ViewManager = ({
           </div>
         </div>
       );
-
-    case 'procedure-selection':
-      return <ProcedureSelection onProcedureSelect={handleProcedureSelect} onBack={handleBackToDashboard} />;
-
-    case 'rules':
-      return <RulesPage procedureType={selectedProcedureType} onBack={handleBackToDashboard} />;
-
-    case 'foreign-policy':
-      return <ForeignPolicyLearning onBack={handleBackToDashboard} />;
-
-    case 'create-committee':
-      return <CreateCommittee onBack={handleBackToDashboard} />;
 
     case 'difficulty':
       return <DifficultySelection onDifficultySelect={handleDifficultySelect} onBack={handleBackToDashboard} />;
@@ -172,25 +154,6 @@ const ViewManager = ({
           onExit={handleExitDebate}
         />
       ) : null;
-
-    case 'mun-committees':
-      return (
-        <MunCommitteeSelection
-          onCommitteeSelect={handleCommitteeSelect}
-          onJoinLiveSession={handleJoinLiveSession}
-          onBack={handleBackToDashboard}
-        />
-      );
-
-    case 'mun':
-      return (
-        <MunArena 
-          committee={selectedCommittee || undefined}
-          liveSession={selectedLiveSession || undefined}
-          onExit={handleExitDebate}
-          onBackToCommittees={handleBackToCommittees}
-        />
-      );
 
     case 'pricing':
       return <PricingPage onBack={handleBackToDashboard} />;
