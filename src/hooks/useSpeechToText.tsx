@@ -15,11 +15,11 @@ export const useSpeechToText = (options: UseSpeechToTextOptions = {}) => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
       
-      if (SpeechRecognition) {
+      if (SpeechRecognitionClass) {
         setIsSupported(true);
-        const recognition = new SpeechRecognition();
+        const recognition = new SpeechRecognitionClass();
         recognition.continuous = options.continuous ?? true;
         recognition.interimResults = true;
         recognition.lang = options.language ?? 'en-US';

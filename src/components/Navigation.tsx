@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   MessageSquare, 
   Trophy, 
-  User, 
+  User as UserIcon, 
   Settings,
   LogOut,
   Crown,
@@ -111,7 +112,7 @@ const Navigation = ({ userTokens, userRole, onRoleSwitch, onGetPremium, onSignOu
                   />
                 ) : (
                   <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                    <User className="h-4 w-4 text-indigo-600" />
+                    <UserIcon className="h-4 w-4 text-indigo-600" />
                   </div>
                 )}
                 <span className="text-sm font-medium text-gray-700">
