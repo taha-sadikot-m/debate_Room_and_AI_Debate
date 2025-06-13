@@ -1,19 +1,23 @@
 
-import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import AuthenticatedApp from '@/components/AuthenticatedApp';
+import { useAuth } from '@/hooks/useAuth';
+import AuthPage from '@/components/AuthPage';
 
-const Index = () => {
-  const { user, loading } = useAuth();
+const Login = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    // If user is not authenticated and not loading, redirect to login
-    if (!loading && !user) {
-      navigate('/login');
+    // If user is already authenticated, redirect to main app
+    if (!loading && user) {
+      navigate('/');
     }
   }, [user, loading, navigate]);
+
+  const handleAuthSuccess = () => {
+    navigate('/');
+  };
 
   // Show loading state while checking authentication
   if (loading) {
@@ -27,13 +31,7 @@ const Index = () => {
     );
   }
 
-  // If user is authenticated, show the main app
-  if (user) {
-    return <AuthenticatedApp />;
-  }
-
-  // This shouldn't happen due to the useEffect redirect, but just in case
-  return null;
+  return <AuthPage onAuthSuccess={handleAuthSuccess} />;
 };
 
-export default Index;
+export default Login;
