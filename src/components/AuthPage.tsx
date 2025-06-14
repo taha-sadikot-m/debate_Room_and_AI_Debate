@@ -3,21 +3,50 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquare, Mail, Lock } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
 }
 
+const loginSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  password: z.string().min(1, { message: "Password is required." }),
+});
+
+const signupSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  password: z.string()
+    .min(8, { message: "Must be at least 8 characters." })
+    .regex(/[a-z]/, { message: "Must contain a lowercase letter." })
+    .regex(/[A-Z]/, { message: "Must contain an uppercase letter." })
+    .regex(/[0-9]/, { message: "Must contain a number." })
+    .regex(/[^a-zA-Z0-9]/, { message: "Must contain a special character." }),
+});
+
+
 const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const { toast } = useToast();
+
+  const loginForm = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  const signupForm = useForm<z.infer<typeof signupSchema>>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  const form = isLogin ? loginForm : signupForm;
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -41,9 +70,9 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     return () => subscription.unsubscribe();
   }, [onAuthSuccess]);
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: z.infer<typeof loginSchema> | z.infer<typeof signupSchema>) => {
     setLoading(true);
+    const { email, password } = values;
 
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -83,6 +112,7 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
             title: "Success",
             description: "Check your email for verification link"
           });
+          form.reset();
         }
       }
     } catch (error) {
@@ -126,6 +156,12 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     }
   };
 
+  const toggleAuthMode = () => {
+    setIsLogin(prev => !prev);
+    loginForm.reset();
+    signupForm.reset();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -161,56 +197,75 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
           </Button>
 
           <div className="relative text-center text-sm text-gray-500 before:block before:absolute before:inset-y-0 before:left-0 before:w-full before:border-t before:border-gray-300 before:mt-3">
-            <span className="relative z-10 bg-gray-50 px-4">or</span>
+            <span className="relative z-10 bg-white px-4">or</span>
           </div>
 
           {/* Email/Password Auth Form */}
-          <form onSubmit={handleEmailAuth} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          type="email"
+                          placeholder="Enter your email"
+                          {...field}
+                          className="pl-10"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          type="password"
+                          placeholder="Enter your password"
+                          {...field}
+                          className="pl-10"
+                        />
+                      </div>
+                    </FormControl>
+                    {!isLogin && (
+                      <FormDescription className="text-xs">
+                        Password must be at least 8 characters and contain an uppercase letter, a lowercase letter, a number, and a special character.
+                      </FormDescription>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full gradient-indigo text-white"
-            >
-              {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full gradient-indigo text-white"
+              >
+                {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
+              </Button>
+            </form>
+          </Form>
 
           <div className="text-center">
             <Button
               variant="link"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={toggleAuthMode}
               className="text-sm"
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
