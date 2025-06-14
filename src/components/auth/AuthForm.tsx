@@ -65,6 +65,30 @@ const AuthForm = ({ form, onSubmit, isLogin, loading }: AuthFormProps) => {
           )}
         />
 
+        {!isLogin && (
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      type="password"
+                      placeholder="Confirm your password"
+                      {...field}
+                      className="pl-10"
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <Button
           type="submit"
           disabled={loading}

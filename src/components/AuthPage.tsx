@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -29,8 +28,11 @@ const signupSchema = z.object({
     .regex(/[A-Z]/, { message: "Must contain an uppercase letter." })
     .regex(/[0-9]/, { message: "Must contain a number." })
     .regex(/[^a-zA-Z0-9]/, { message: "Must contain a special character." }),
+  confirmPassword: z.string().min(1, { message: "Please confirm your password." }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
-
 
 const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -45,7 +47,7 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", confirmPassword: "" },
   });
 
   const form = isLogin ? loginForm : signupForm;
