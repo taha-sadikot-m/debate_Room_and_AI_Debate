@@ -10,9 +10,10 @@ interface AuthFormProps {
   onSubmit: (values: any) => void;
   isLogin: boolean;
   loading: boolean;
+  onForgotPassword?: () => void;
 }
 
-const AuthForm = ({ form, onSubmit, isLogin, loading }: AuthFormProps) => {
+const AuthForm = ({ form, onSubmit, isLogin, loading, onForgotPassword }: AuthFormProps) => {
   return (
     <Form {...form}>
       <form key={isLogin ? 'login' : 'signup'} onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -87,6 +88,19 @@ const AuthForm = ({ form, onSubmit, isLogin, loading }: AuthFormProps) => {
               </FormItem>
             )}
           />
+        )}
+
+        {isLogin && onForgotPassword && (
+          <div className="text-right">
+            <Button
+              type="button"
+              variant="link"
+              onClick={onForgotPassword}
+              className="text-sm p-0 h-auto"
+            >
+              Forgot your password?
+            </Button>
+          </div>
         )}
 
         <Button

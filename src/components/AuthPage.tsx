@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +11,7 @@ import GoogleSignInButton from './auth/GoogleSignInButton';
 import OrSeparator from './auth/OrSeparator';
 import AuthForm from './auth/AuthForm';
 import AuthToggle from './auth/AuthToggle';
+import ForgotPassword from './auth/ForgotPassword';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
@@ -36,6 +38,7 @@ const signupSchema = z.object({
 
 const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const { toast } = useToast();
@@ -162,25 +165,47 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
 
   const toggleAuthMode = () => {
     setIsLogin(prev => !prev);
+    setShowForgotPassword(false);
     loginForm.reset();
     signupForm.reset();
+  };
+
+  const handleForgotPassword = () => {
+    setShowForgotPassword(true);
+  };
+
+  const handleBackToLogin = () => {
+    setShowForgotPassword(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <AuthCard
         title="Welcome to mydebate.ai"
-        description={isLogin ? 'Sign in to your account' : 'Create your account'}
+        description={
+          showForgotPassword 
+            ? 'Reset your password' 
+            : isLogin 
+              ? 'Sign in to your account' 
+              : 'Create your account'
+        }
       >
-        <GoogleSignInButton onClick={handleGoogleLogin} isLoading={googleLoading} />
-        <OrSeparator />
-        <AuthForm
-          form={form}
-          onSubmit={onSubmit}
-          isLogin={isLogin}
-          loading={loading}
-        />
-        <AuthToggle isLogin={isLogin} onClick={toggleAuthMode} />
+        {showForgotPassword ? (
+          <ForgotPassword onBack={handleBackToLogin} />
+        ) : (
+          <>
+            <GoogleSignInButton onClick={handleGoogleLogin} isLoading={googleLoading} />
+            <OrSeparator />
+            <AuthForm
+              form={form}
+              onSubmit={onSubmit}
+              isLogin={isLogin}
+              loading={loading}
+              onForgotPassword={handleForgotPassword}
+            />
+            <AuthToggle isLogin={isLogin} onClick={toggleAuthMode} />
+          </>
+        )}
       </AuthCard>
     </div>
   );
