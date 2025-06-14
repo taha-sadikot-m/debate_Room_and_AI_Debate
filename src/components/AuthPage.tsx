@@ -1,14 +1,16 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock } from 'lucide-react';
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
+import AuthCard from './auth/AuthCard';
+import GoogleSignInButton from './auth/GoogleSignInButton';
+import OrSeparator from './auth/OrSeparator';
+import AuthForm from './auth/AuthForm';
+import AuthToggle from './auth/AuthToggle';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
@@ -164,115 +166,20 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <img
-            src="/lovable-uploads/80a86b55-ac06-4e1e-905b-e5574803f537.png"
-            alt="MyDebate.ai Logo"
-            className="h-16 w-16 mx-auto mb-4"
-          />
-          <CardTitle className="text-2xl">Welcome to mydebate.ai</CardTitle>
-          <CardDescription>
-            {isLogin ? 'Sign in to your account' : 'Create your account'}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {/* Google Sign-In Button */}
-          <Button
-            onClick={handleGoogleLogin}
-            disabled={googleLoading}
-            className="w-full bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 flex items-center justify-center gap-2"
-          >
-            {googleLoading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-700"></div>
-            ) : (
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
-                className="w-5 h-5"
-              />
-            )}
-            {googleLoading ? 'Connecting...' : 'Continue with Google'}
-          </Button>
-
-          <div className="relative text-center text-sm text-gray-500 before:block before:absolute before:inset-y-0 before:left-0 before:w-full before:border-t before:border-gray-300 before:mt-3">
-            <span className="relative z-10 bg-white px-4">or</span>
-          </div>
-
-          {/* Email/Password Auth Form */}
-          <Form {...form}>
-            <form key={isLogin ? 'login' : 'signup'} onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          type="email"
-                          placeholder="Enter your email"
-                          {...field}
-                          className="pl-10"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          type="password"
-                          placeholder="Enter your password"
-                          {...field}
-                          className="pl-10"
-                        />
-                      </div>
-                    </FormControl>
-                    {!isLogin && (
-                      <FormDescription className="text-xs">
-                        Password must be at least 8 characters and contain an uppercase letter, a lowercase letter, a number, and a special character.
-                      </FormDescription>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full gradient-indigo text-white"
-              >
-                {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
-              </Button>
-            </form>
-          </Form>
-
-          <div className="text-center">
-            <Button
-              variant="link"
-              onClick={toggleAuthMode}
-              className="text-sm"
-            >
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <AuthCard
+        title="Welcome to mydebate.ai"
+        description={isLogin ? 'Sign in to your account' : 'Create your account'}
+      >
+        <GoogleSignInButton onClick={handleGoogleLogin} isLoading={googleLoading} />
+        <OrSeparator />
+        <AuthForm
+          form={form}
+          onSubmit={onSubmit}
+          isLogin={isLogin}
+          loading={loading}
+        />
+        <AuthToggle isLogin={isLogin} onClick={toggleAuthMode} />
+      </AuthCard>
     </div>
   );
 };
