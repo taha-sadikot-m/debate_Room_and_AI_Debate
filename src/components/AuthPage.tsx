@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -27,6 +29,17 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
       }
     };
     checkAuth();
+
+    // Listen for OAuth redirect callback
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          onAuthSuccess();
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, [onAuthSuccess]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -85,16 +98,32 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
   };
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google'
-    });
+    setGoogleLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
+      });
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Google Login Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        setGoogleLoading(false);
+      }
+      // Don't set loading to false here as the page will redirect
+    } catch (error) {
       toast({
         title: "Google Login Failed",
-        description: error.message,
+        description: "An unexpected error occurred",
         variant: "destructive"
       });
+      setGoogleLoading(false);
     }
   };
 
@@ -112,24 +141,29 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* 🔵 Google Sign-In Button */}
+          {/* Google Sign-In Button */}
           <Button
             onClick={handleGoogleLogin}
+            disabled={googleLoading}
             className="w-full bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 flex items-center justify-center gap-2"
           >
-            <img
-              src="https://www.svgrepo.com/show/475656/google-color.svg"
-              alt="Google"
-              className="w-5 h-5"
-            />
-            Continue with Google
+            {googleLoading ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-700"></div>
+            ) : (
+              <img
+                src="https://www.svgrepo.com/show/475656/google-color.svg"
+                alt="Google"
+                className="w-5 h-5"
+              />
+            )}
+            {googleLoading ? 'Connecting...' : 'Continue with Google'}
           </Button>
 
           <div className="relative text-center text-sm text-gray-500 before:block before:absolute before:inset-y-0 before:left-0 before:w-full before:border-t before:border-gray-300 before:mt-3">
             <span className="relative z-10 bg-gray-50 px-4">or</span>
           </div>
 
-          {/* 📨 Email/Password Auth Form */}
+          {/* Email/Password Auth Form */}
           <form onSubmit={handleEmailAuth} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
