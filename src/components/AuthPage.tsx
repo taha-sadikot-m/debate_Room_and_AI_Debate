@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -131,9 +130,11 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto gradient-indigo p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-            <MessageSquare className="h-8 w-8 text-white" />
-          </div>
+          <img
+            src="/lovable-uploads/80a86b55-ac06-4e1e-905b-e5574803f537.png"
+            alt="MyDebate.ai Logo"
+            className="h-16 w-16 mx-auto mb-4"
+          />
           <CardTitle className="text-2xl">Welcome to mydebate.ai</CardTitle>
           <CardDescription>
             {isLogin ? 'Sign in to your account' : 'Create your account'}
