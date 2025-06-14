@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -109,12 +108,17 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
         });
 
         if (error) {
-          // Check for specific error messages related to existing users
+          console.log('Signup error:', error); // Debug log to see actual error
+          
+          // Check for various error messages that indicate user already exists
           let errorMessage = error.message;
           
-          if (error.message.includes('User already registered') || 
-              error.message.includes('already been registered') ||
-              error.message.includes('email address is already registered')) {
+          if (error.message.toLowerCase().includes('user already registered') || 
+              error.message.toLowerCase().includes('already been registered') ||
+              error.message.toLowerCase().includes('email address is already registered') ||
+              error.message.toLowerCase().includes('user with this email already exists') ||
+              error.message.toLowerCase().includes('email already registered') ||
+              error.message.toLowerCase().includes('already exists')) {
             errorMessage = "An account with this email address already exists. Please try signing in instead.";
           }
           
@@ -132,6 +136,7 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
         }
       }
     } catch (error) {
+      console.log('Unexpected error:', error); // Debug log
       toast({
         title: "Error",
         description: "Authentication failed",
