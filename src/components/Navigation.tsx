@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,6 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Coins, Crown, User, LogOut, Settings } from 'lucide-react';
-import Logo3D from './Logo3D';
 
 interface NavigationProps {
   userTokens: number;
@@ -34,7 +34,11 @@ const Navigation = ({
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center space-x-3">
-          <Logo3D />
+          <img 
+            src="/lovable-uploads/236def80-ed34-4ee1-8fe5-ec9afc644cc3.png" 
+            alt="MyDebate.ai Logo" 
+            className="h-10 w-10"
+          />
           <h1 className="text-xl font-bold text-gray-900">MyDebate.ai</h1>
         </div>
 
