@@ -109,9 +109,18 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
         });
 
         if (error) {
+          // Check for specific error messages related to existing users
+          let errorMessage = error.message;
+          
+          if (error.message.includes('User already registered') || 
+              error.message.includes('already been registered') ||
+              error.message.includes('email address is already registered')) {
+            errorMessage = "An account with this email address already exists. Please try signing in instead.";
+          }
+          
           toast({
             title: "Error",
-            description: error.message,
+            description: errorMessage,
             variant: "destructive"
           });
         } else {
