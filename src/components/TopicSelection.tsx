@@ -7,6 +7,7 @@ import { ArrowRight, Shuffle } from 'lucide-react';
 import { allTopics, Topic } from '@/data/topics';
 import TopicCard from '@/components/TopicCard';
 import ArgumentsDisplay from '@/components/ArgumentsDisplay';
+import SuggestTopicDialog from '@/components/SuggestTopicDialog';
 
 interface TopicSelectionProps {
   difficulty: 'Easy' | 'Medium' | 'Hard';
@@ -68,14 +69,34 @@ const TopicSelection = ({ difficulty, theme, onTopicSelect, onBack }: TopicSelec
       </div>
 
       {!selectedTopic ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {topics.map((topic) => (
-            <TopicCard 
-              key={topic.id} 
-              topic={topic} 
-              onSelect={handleTopicSelect}
-            />
-          ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {topics.map((topic) => (
+              <TopicCard 
+                key={topic.id} 
+                topic={topic} 
+                onSelect={handleTopicSelect}
+              />
+            ))}
+          </div>
+          
+          {/* Topic suggestion section */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <div className="text-center space-y-4">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Don't see a topic you like?
+                </h3>
+                <p className="text-gray-600">
+                  Suggest a new topic for future debates
+                </p>
+              </div>
+              
+              <div className="max-w-sm mx-auto">
+                <SuggestTopicDialog />
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-6">

@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
   TrendingUp, 
@@ -17,8 +17,10 @@ import {
   Award,
   MessageSquare,
   FileText,
-  Activity
+  Activity,
+  BookOpen
 } from 'lucide-react';
+import TopicManagement from '@/components/TopicManagement';
 
 const TeacherDashboard = () => {
   const [selectedClass, setSelectedClass] = useState('Grade 10A');
@@ -90,45 +92,212 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* Class Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {classrooms.map((classroom, index) => (
-          <Card 
-            key={index} 
-            className={`card-shadow cursor-pointer transition-all duration-200 ${
-              selectedClass === classroom.name ? 'ring-2 ring-indigo-500' : 'hover:card-shadow-lg'
-            }`}
-            onClick={() => setSelectedClass(classroom.name)}
-          >
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">{classroom.name}</h3>
-                <Badge variant="secondary">{classroom.activeDebates} active</Badge>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Students</span>
-                  <span className="font-medium">{classroom.students}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Avg Score</span>
-                  <span className="font-medium">{classroom.avgScore}%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Active Debates</span>
-                  <span className="font-medium">{classroom.activeDebates}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Main Dashboard Tabs */}
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview" className="flex items-center space-x-2">
+            <BarChart3 className="h-4 w-4" />
+            <span>Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="students" className="flex items-center space-x-2">
+            <Users className="h-4 w-4" />
+            <span>Students</span>
+          </TabsTrigger>
+          <TabsTrigger value="topics" className="flex items-center space-x-2">
+            <BookOpen className="h-4 w-4" />
+            <span>Topic Management</span>
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Student Performance */}
-        <div className="lg:col-span-2 space-y-6">
+        <TabsContent value="overview" className="space-y-6">
+          {/* Class Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {classrooms.map((classroom, index) => (
+              <Card 
+                key={index} 
+                className={`card-shadow cursor-pointer transition-all duration-200 ${
+                  selectedClass === classroom.name ? 'ring-2 ring-indigo-500' : 'hover:card-shadow-lg'
+                }`}
+                onClick={() => setSelectedClass(classroom.name)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">{classroom.name}</h3>
+                    <Badge variant="secondary">{classroom.activeDebates} active</Badge>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Students</span>
+                      <span className="font-medium">{classroom.students}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Avg Score</span>
+                      <span className="font-medium">{classroom.avgScore}%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Active Debates</span>
+                      <span className="font-medium">{classroom.activeDebates}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Recent Debates */}
+            <div className="lg:col-span-2">
+              <Card className="card-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <MessageSquare className="h-5 w-5 text-green-600" />
+                    <span>Recent Debates</span>
+                  </CardTitle>
+                  <CardDescription>Live and completed debate sessions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {recentDebates.map((debate, index) => (
+                      <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <h4 className="font-medium text-gray-900">{debate.topic}</h4>
+                            <p className="text-sm text-gray-500">
+                              {debate.type === 'mun' ? 'MUN Session' : debate.participants.join(' vs ')}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant={debate.status === 'ongoing' ? 'default' : 'secondary'}>
+                              {debate.status}
+                            </Badge>
+                            <Badge variant="outline">
+                              {debate.type.toUpperCase()}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-1">
+                              <Clock className="h-4 w-4 text-gray-400" />
+                              <span className="text-sm text-gray-600">{debate.duration}</span>
+                            </div>
+                            {debate.scores.length > 1 && (
+                              <div className="flex items-center space-x-1">
+                                <BarChart3 className="h-4 w-4 text-gray-400" />
+                                <span className="text-sm text-gray-600">
+                                  Scores: {debate.scores.join(', ')}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                            View Details
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Quick Stats */}
+              <Card className="card-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Activity className="h-5 w-5 text-purple-600" />
+                    <span>Quick Stats</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <span className="text-sm text-gray-600">Class Average</span>
+                    </div>
+                    <span className="font-medium text-green-600">87%</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Clock className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-600">Active Sessions</span>
+                    </div>
+                    <span className="font-medium">6</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Award className="h-4 w-4 text-yellow-600" />
+                      <span className="text-sm text-gray-600">Total Tokens</span>
+                    </div>
+                    <span className="font-medium text-yellow-600">1,269</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Assignments */}
+              <Card className="card-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <FileText className="h-5 w-5 text-indigo-600" />
+                    <span>Assignments</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {assignments.map((assignment, index) => (
+                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-sm text-gray-900">{assignment.title}</h4>
+                        <Badge 
+                          variant={assignment.status === 'completed' ? 'default' : 'secondary'}
+                          className={assignment.status === 'completed' ? 'bg-green-100 text-green-700' : ''}
+                        >
+                          {assignment.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Due: {assignment.dueDate}</span>
+                        <span className="text-gray-600">
+                          {assignment.submissions}/{assignment.total} submitted
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Quick Actions */}
+              <Card className="card-shadow">
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button className="w-full" variant="outline">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Schedule Session
+                  </Button>
+                  <Button className="w-full" variant="outline">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Generate Report
+                  </Button>
+                  <Button className="w-full" variant="outline">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Class Settings
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="students" className="space-y-6">
+          {/* Student Performance */}
           <Card className="card-shadow">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -185,154 +354,12 @@ const TeacherDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {/* Recent Debates */}
-          <Card className="card-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <MessageSquare className="h-5 w-5 text-green-600" />
-                <span>Recent Debates</span>
-              </CardTitle>
-              <CardDescription>Live and completed debate sessions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentDebates.map((debate, index) => (
-                  <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{debate.topic}</h4>
-                        <p className="text-sm text-gray-500">
-                          {debate.type === 'mun' ? 'MUN Session' : debate.participants.join(' vs ')}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={debate.status === 'ongoing' ? 'default' : 'secondary'}>
-                          {debate.status}
-                        </Badge>
-                        <Badge variant="outline">
-                          {debate.type.toUpperCase()}
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">{debate.duration}</span>
-                        </div>
-                        {debate.scores.length > 1 && (
-                          <div className="flex items-center space-x-1">
-                            <BarChart3 className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm text-gray-600">
-                              Scores: {debate.scores.join(', ')}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                        View Details
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Quick Stats */}
-          <Card className="card-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Activity className="h-5 w-5 text-purple-600" />
-                <span>Quick Stats</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-gray-600">Class Average</span>
-                </div>
-                <span className="font-medium text-green-600">87%</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-gray-600">Active Sessions</span>
-                </div>
-                <span className="font-medium">6</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Award className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm text-gray-600">Total Tokens</span>
-                </div>
-                <span className="font-medium text-yellow-600">1,269</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Assignments */}
-          <Card className="card-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-indigo-600" />
-                <span>Assignments</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {assignments.map((assignment, index) => (
-                <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-sm text-gray-900">{assignment.title}</h4>
-                    <Badge 
-                      variant={assignment.status === 'completed' ? 'default' : 'secondary'}
-                      className={assignment.status === 'completed' ? 'bg-green-100 text-green-700' : ''}
-                    >
-                      {assignment.status}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Due: {assignment.dueDate}</span>
-                    <span className="text-gray-600">
-                      {assignment.submissions}/{assignment.total} submitted
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card className="card-shadow">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full" variant="outline">
-                <Calendar className="h-4 w-4 mr-2" />
-                Schedule Session
-              </Button>
-              <Button className="w-full" variant="outline">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Generate Report
-              </Button>
-              <Button className="w-full" variant="outline">
-                <Settings className="h-4 w-4 mr-2" />
-                Class Settings
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        <TabsContent value="topics">
+          <TopicManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
