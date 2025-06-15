@@ -1,6 +1,6 @@
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Users, Settings, Calendar, BookOpen, Zap, Crown, Globe } from 'lucide-react';
+import { Bot, Users, Settings, Calendar, BookOpen, Zap, Crown, Globe, Newspaper } from 'lucide-react';
 
 interface MainMenuCardProps {
   onStartDebate: () => void;
@@ -10,6 +10,7 @@ interface MainMenuCardProps {
   onViewEvents: () => void;
   onResources: () => void;
   onPublicSpeaking: () => void;
+  onDebatesHub: () => void;
 }
 
 const MainMenuCard = ({ 
@@ -19,7 +20,8 @@ const MainMenuCard = ({
   onCreateDebateRoom, 
   onViewEvents, 
   onResources,
-  onPublicSpeaking
+  onPublicSpeaking,
+  onDebatesHub
 }: MainMenuCardProps) => {
   const menuItems = [
     {
@@ -48,6 +50,15 @@ const MainMenuCard = ({
       borderColor: 'border-gray-200',
       bgGradient: 'from-gray-50 to-white',
       iconBg: 'bg-gray-700'
+    },
+    {
+      icon: Newspaper,
+      title: '📰 Debates & MUNs Hub',
+      description: 'Articles, videos, and resources for debate mastery',
+      onClick: onDebatesHub,
+      borderColor: 'border-indigo-200',
+      bgGradient: 'from-indigo-50 to-white',
+      iconBg: 'bg-indigo-500'
     },
     {
       icon: Settings,

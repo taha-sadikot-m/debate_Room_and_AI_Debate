@@ -151,6 +151,11 @@ export const useAppHandlers = ({
     setCurrentView('public-speaking');
   };
 
+  const handleDebatesHub = () => {
+    console.log('Navigating to Debates & MUNs Hub');
+    setCurrentView('debates-hub');
+  };
+
   return {
     handleStartDebate,
     handleJoinMUN,
@@ -171,6 +176,7 @@ export const useAppHandlers = ({
     handleBackToCommittees,
     handleLiveDebateFormatSelect,
     handleDebateLive,
-    handlePublicSpeaking
+    handlePublicSpeaking,
+    handleDebatesHub
   };
 };

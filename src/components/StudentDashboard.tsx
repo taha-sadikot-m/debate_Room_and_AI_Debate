@@ -16,6 +16,7 @@ interface StudentDashboardProps {
   onResources: () => void;
   onViewTokens: () => void;
   onPublicSpeaking: () => void;
+  onDebatesHub: () => void;
 }
 
 const StudentDashboard = ({ 
@@ -27,7 +28,8 @@ const StudentDashboard = ({
   onViewEvents, 
   onResources, 
   onViewTokens,
-  onPublicSpeaking
+  onPublicSpeaking,
+  onDebatesHub
 }: StudentDashboardProps) => {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -66,6 +68,7 @@ const StudentDashboard = ({
         onViewEvents={onViewEvents}
         onResources={onResources}
         onPublicSpeaking={onPublicSpeaking}
+        onDebatesHub={onDebatesHub}
       />
 
       {/* Quick Tips Section */}
