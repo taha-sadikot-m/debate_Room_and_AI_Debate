@@ -64,6 +64,7 @@ interface ViewManagerProps {
     handleBackToCommittees: () => void;
     handleLiveDebateFormatSelect: (format: '1v1' | '3v3', language: string) => void;
     handlePublicSpeaking: () => void;
+    handleDebatesHub: () => void;
   };
 }
 
@@ -96,6 +97,7 @@ const ViewManager = ({
             onResources={handlers.handleResources}
             onViewTokens={handlers.handleViewTokens}
             onPublicSpeaking={handlers.handlePublicSpeaking}
+            onDebatesHub={handlers.handleDebatesHub}
           />
         ) : (
           <TeacherDashboard />
@@ -217,7 +219,7 @@ const ViewManager = ({
         ) : null;
 
       case 'debates-hub':
-        return <DebatesHub onBack={() => handlers.handleViewChange('dashboard')} />;
+        return <DebatesHub onBack={handlers.handleBackToDashboard} />;
 
       case 'pricing':
         return <PricingPage onBack={handlers.handleBackToDashboard} />;
