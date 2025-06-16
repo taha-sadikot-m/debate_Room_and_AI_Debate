@@ -35,7 +35,7 @@ const Navigation = ({
         {/* Logo */}
         <div className="flex items-center space-x-3">
           <img 
-            src="/lovable-uploads/165b325a-577f-494b-872b-6b2f24b82083.png" 
+            src="/lovable-uploads/84ae741b-013f-4cd2-973e-bb3a870f3134.png" 
             alt="MyDebate.ai Logo" 
             className="h-12 w-12 rounded-xl shadow-lg"
           />
