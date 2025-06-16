@@ -7,7 +7,7 @@ import { ArrowRight, Shuffle } from 'lucide-react';
 import { allTopics, Topic } from '@/data/topics';
 import TopicCard from '@/components/TopicCard';
 import ArgumentsDisplay from '@/components/ArgumentsDisplay';
-import SuggestTopicDialog from '@/components/SuggestTopicDialog';
+import TopicSuggestDialog from '@/components/TopicSuggestDialog';
 
 interface TopicSelectionProps {
   difficulty: 'Easy' | 'Medium' | 'Hard';
@@ -27,6 +27,20 @@ const TopicSelection = ({ difficulty, theme, onTopicSelect, onBack }: TopicSelec
 
   // If no topics match exactly, show all topics from the theme
   const topics = filteredTopics.length > 0 ? filteredTopics : allTopics.filter(topic => topic.theme === theme);
+
+  // Pre-filled topics for each theme
+  const preFilledTopics: Record<string, string[]> = {
+    'Politics': ["Should voting be mandatory?", "Is democracy still the best?", "Should politicians be allowed on social media?"],
+    'Technology': ["Is AI a threat to jobs?", "Should social media be regulated?", "Is tech addiction real?"],
+    'Environment': ["Should plastic be banned?", "Can individuals fight climate change?", "Should countries be penalized for pollution?"],
+    'Education': ["Should exams be scrapped?", "Online vs Traditional Learning", "Should students grade teachers?"],
+    'Health': ["Is mental health equal to physical health?", "Should healthcare be free?", "Are fitness influencers misleading?"],
+    'Cinema': ["Should movies be censored?", "Do biopics need to be accurate?", "Are awards shows outdated?"],
+    'Sports': ["Are esports real sports?", "Should athletes be role models?", "Should PEDs be legal?"],
+    'Food': ["Should junk food ads be banned?", "Is veganism the future?", "Should lab-grown meat be promoted?"],
+    'Society': ["Is cancel culture needed?", "Should marriages have expiry?", "Do social media likes define worth?"],
+    'Economics': ["Should billionaires exist?", "Is UBI realistic?", "Should crypto be banned?"]
+  };
 
   const handleRandomTopic = () => {
     const randomTopic = topics[Math.floor(Math.random() * topics.length)];
@@ -58,6 +72,7 @@ const TopicSelection = ({ difficulty, theme, onTopicSelect, onBack }: TopicSelec
           </p>
         </div>
         <div className="flex space-x-3">
+          <TopicSuggestDialog />
           <Button variant="outline" onClick={handleRandomTopic}>
             <Shuffle className="h-4 w-4 mr-2" />
             Random Topic
@@ -70,6 +85,29 @@ const TopicSelection = ({ difficulty, theme, onTopicSelect, onBack }: TopicSelec
 
       {!selectedTopic ? (
         <div className="space-y-6">
+          {/* Pre-filled topic suggestions */}
+          {preFilledTopics[theme] && (
+            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-indigo-900 mb-3">
+                Popular {theme} Topics
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {preFilledTopics[theme].map((topic, index) => (
+                  <button
+                    key={index}
+                    className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-indigo-700 bg-white border border-indigo-300 rounded-full hover:bg-indigo-100 transition-colors cursor-pointer"
+                    onClick={() => {
+                      // For now, just show the topic - we'll wire this up later
+                      console.log('Selected pre-filled topic:', topic);
+                    }}
+                  >
+                    {topic}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {topics.map((topic) => (
               <TopicCard 
@@ -78,24 +116,6 @@ const TopicSelection = ({ difficulty, theme, onTopicSelect, onBack }: TopicSelec
                 onSelect={handleTopicSelect}
               />
             ))}
-          </div>
-          
-          {/* Topic suggestion section */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="text-center space-y-4">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900">
-                  Don't see a topic you like?
-                </h3>
-                <p className="text-gray-600">
-                  Suggest a new topic for future debates
-                </p>
-              </div>
-              
-              <div className="max-w-sm mx-auto">
-                <SuggestTopicDialog />
-              </div>
-            </div>
           </div>
         </div>
       ) : (

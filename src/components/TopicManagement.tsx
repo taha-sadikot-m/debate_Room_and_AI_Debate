@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,8 +75,15 @@ const TopicManagement = () => {
 
       if (error) throw error;
 
-      // 🔧 Fixed line below
-      setSuggestedTopics((data || []) as SuggestedTopic[]);
+      // Type assertion with proper filtering for status
+      const typedData = (data || []).map(item => ({
+        ...item,
+        status: (['pending', 'approved', 'rejected'].includes(item.status) 
+          ? item.status 
+          : 'pending') as 'pending' | 'approved' | 'rejected'
+      })) as SuggestedTopic[];
+      
+      setSuggestedTopics(typedData);
     } catch (error) {
       console.error('Error fetching suggested topics:', error);
       toast({
@@ -280,8 +288,95 @@ const TopicManagement = () => {
         </Dialog>
       </div>
 
-      {/* The rest of the tabs and content remain unchanged */}
+      <Tabs defaultValue="suggestions" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="suggestions">Student Suggestions</TabsTrigger>
+          <TabsTrigger value="topics">Manage Topics</TabsTrigger>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
+        </TabsList>
 
+        <TabsContent value="suggestions" className="space-y-4">
+          <div className="grid gap-4">
+            {suggestedTopics.length === 0 ? (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No suggestions yet</h3>
+                  <p className="text-gray-600">Student topic suggestions will appear here</p>
+                </CardContent>
+              </Card>
+            ) : (
+              suggestedTopics.map((topic) => (
+                <Card key={topic.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{topic.topic_name}</CardTitle>
+                        <CardDescription className="mt-1">
+                          Category: {topic.category}
+                        </CardDescription>
+                        {topic.description && (
+                          <p className="text-sm text-gray-600 mt-2">{topic.description}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge className={getStatusColor(topic.status)}>
+                          {getStatusIcon(topic.status)}
+                          <span className="ml-1 capitalize">{topic.status}</span>
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  
+                  {topic.status === 'pending' && (
+                    <CardContent className="pt-0">
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          onClick={() => updateTopicStatus(topic.id, 'approved')}
+                          className="flex-1"
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateTopicStatus(topic.id, 'rejected')}
+                          className="flex-1"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+              ))
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="topics" className="space-y-4">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <Settings className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Topic Management</h3>
+              <p className="text-gray-600">Manage existing debate topics (coming soon)</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="categories" className="space-y-4">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <Settings className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Category Management</h3>
+              <p className="text-gray-600">Manage debate categories (coming soon)</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
