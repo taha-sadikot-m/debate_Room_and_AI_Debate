@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,9 +14,22 @@ interface SuggestTopicDialogProps {
   onTopicSuggested?: () => void;
 }
 
+const themes = [
+  'Politics',
+  'Technology',
+  'Environment',
+  'Education',
+  'Health',
+  'Cinema',
+  'Sports',
+  'Food',
+  'Society',
+  'Economics'
+];
+
 const categories = [
   'Technology',
-  'Politics', 
+  'Politics',
   'Environment',
   'Education',
   'Health',
@@ -37,16 +49,17 @@ const SuggestTopicDialog = ({ onTopicSuggested }: SuggestTopicDialogProps) => {
     defaultValues: {
       topicName: '',
       category: '',
-      description: ''
+      description: '',
+      theme: ''
     }
   });
 
   const onSubmit = async (values: any) => {
     setIsSubmitting(true);
-    
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         toast({
           title: "Error",
@@ -56,14 +69,20 @@ const SuggestTopicDialog = ({ onTopicSuggested }: SuggestTopicDialogProps) => {
         return;
       }
 
+      const insertPayload: any = {
+        student_id: user.id,
+        topic_name: values.topicName,
+        category: values.category,
+        description: values.description || null,
+      };
+
+      if (values.theme) {
+        insertPayload.theme = values.theme;
+      }
+
       const { error } = await supabase
         .from('suggested_topics')
-        .insert({
-          student_id: user.id,
-          topic_name: values.topicName,
-          category: values.category,
-          description: values.description || null
-        });
+        .insert(insertPayload);
 
       if (error) throw error;
 
@@ -99,7 +118,7 @@ const SuggestTopicDialog = ({ onTopicSuggested }: SuggestTopicDialogProps) => {
         <DialogHeader>
           <DialogTitle>Suggest a New Topic</DialogTitle>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -110,10 +129,7 @@ const SuggestTopicDialog = ({ onTopicSuggested }: SuggestTopicDialogProps) => {
                 <FormItem>
                   <FormLabel>Topic Name</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Enter your debate topic..."
-                      {...field}
-                    />
+                    <Input placeholder="Enter your debate topic..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -148,12 +164,38 @@ const SuggestTopicDialog = ({ onTopicSuggested }: SuggestTopicDialogProps) => {
 
             <FormField
               control={form.control}
+              name="theme"
+              rules={{ required: "Theme is required" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Theme</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a theme" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {themes.map((theme) => (
+                          <SelectItem key={theme} value={theme}>
+                            {theme}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description (Optional)</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Provide context or details about your topic..."
                       className="min-h-[80px]"
                       {...field}
@@ -165,19 +207,10 @@ const SuggestTopicDialog = ({ onTopicSuggested }: SuggestTopicDialogProps) => {
             />
 
             <div className="flex space-x-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setIsOpen(false)}
-                className="flex-1"
-              >
+              <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="flex-1">
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="flex-1"
-              >
+              <Button type="submit" disabled={isSubmitting} className="flex-1">
                 {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
               </Button>
             </div>
