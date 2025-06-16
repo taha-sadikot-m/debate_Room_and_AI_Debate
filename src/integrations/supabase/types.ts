@@ -123,6 +123,7 @@ export type Database = {
           reviewed_by: string | null
           status: string
           student_id: string
+          theme: string | null
           topic_name: string
           updated_at: string
         }
@@ -135,6 +136,7 @@ export type Database = {
           reviewed_by?: string | null
           status?: string
           student_id: string
+          theme?: string | null
           topic_name: string
           updated_at?: string
         }
@@ -147,6 +149,7 @@ export type Database = {
           reviewed_by?: string | null
           status?: string
           student_id?: string
+          theme?: string | null
           topic_name?: string
           updated_at?: string
         }

@@ -30,16 +30,18 @@ const Navigation = ({
   user 
 }: NavigationProps) => {
   return (
-    <nav className="bg-white border-b border-gray-200 px-6 py-4">
+    <nav className="bg-white/95 backdrop-blur-sm border-b border-purple-200 px-6 py-4 shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center space-x-3">
           <img 
-            src="/lovable-uploads/80a86b55-ac06-4e1e-905b-e5574803f537.png" 
+            src="/lovable-uploads/165b325a-577f-494b-872b-6b2f24b82083.png" 
             alt="MyDebate.ai Logo" 
-            className="h-10 w-10"
+            className="h-12 w-12 rounded-xl shadow-lg"
           />
-          <h1 className="text-xl font-bold text-gray-900">MyDebate.ai</h1>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-pink-500 bg-clip-text text-transparent">
+            mydebate.ai
+          </h1>
         </div>
 
         {/* Center - Role Switch */}
@@ -48,6 +50,7 @@ const Navigation = ({
             variant={userRole === 'student' ? 'default' : 'outline'}
             size="sm"
             onClick={() => onRoleSwitch('student')}
+            className={userRole === 'student' ? 'bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-600 hover:to-pink-600' : ''}
           >
             Student
           </Button>
@@ -55,6 +58,7 @@ const Navigation = ({
             variant={userRole === 'teacher' ? 'default' : 'outline'}
             size="sm"
             onClick={() => onRoleSwitch('teacher')}
+            className={userRole === 'teacher' ? 'bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-600 hover:to-pink-600' : ''}
           >
             Teacher
           </Button>
@@ -65,7 +69,7 @@ const Navigation = ({
           {/* Tokens */}
           <div className="flex items-center space-x-2">
             <Coins className="h-5 w-5 text-yellow-600" />
-            <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
+            <Badge variant="secondary" className="bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 border-yellow-300">
               {userTokens} tokens
             </Badge>
           </div>
@@ -74,7 +78,7 @@ const Navigation = ({
           <Button 
             size="sm" 
             onClick={onGetPremium}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            className="bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 hover:from-purple-600 hover:via-pink-600 hover:to-cyan-600 text-white shadow-lg"
           >
             <Crown className="h-4 w-4 mr-2" />
             Get Premium
@@ -86,7 +90,7 @@ const Navigation = ({
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.user_metadata?.avatar_url} />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-r from-cyan-400 to-pink-400 text-white">
                     <User className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>

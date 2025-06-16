@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* MUN Debate Platform Design System */
+/* MyDebate.AI Design System - Updated with Logo Colors */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
@@ -17,45 +17,45 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 238 78% 60%;
+    /* Updated primary colors based on logo - cyan to magenta gradient */
+    --primary: 310 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 238 78% 96%;
-    --secondary-foreground: 238 78% 20%;
+    --secondary: 310 100% 96%;
+    --secondary-foreground: 310 100% 20%;
 
-    --muted: 238 78% 96%;
+    --muted: 310 50% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 238 78% 95%;
-    --accent-foreground: 238 78% 30%;
+    --accent: 310 50% 95%;
+    --accent-foreground: 310 100% 30%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 238 78% 91%;
-    --input: 238 78% 91%;
-    --ring: 238 78% 60%;
+    --border: 310 50% 91%;
+    --input: 310 50% 91%;
+    --ring: 310 100% 50%;
 
     --radius: 0.75rem;
 
-    /* Custom MUN Platform Colors - Indigo & Black Theme */
-    --indigo-50: 238 78% 98%;
-    --indigo-100: 238 78% 94%;
-    --indigo-400: 238 78% 70%;
-    --indigo-500: 238 78% 60%;
-    --indigo-600: 238 78% 50%;
-    --indigo-700: 238 78% 40%;
-    --indigo-800: 238 78% 30%;
-    --indigo-900: 238 78% 18%;
+    /* Custom MyDebate.AI Colors - Cyan to Magenta Theme */
+    --cyan: 180 100% 50%;
+    --cyan-light: 180 100% 75%;
+    --magenta: 310 100% 50%;
+    --magenta-light: 310 100% 75%;
+    --purple-dark: 260 50% 20%;
+    --purple-gradient-start: 260 100% 35%;
+    --purple-gradient-end: 310 100% 50%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 260 50% 8%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 260 50% 8%;
     --card-foreground: 210 40% 98%;
-    --primary: 238 78% 70%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 310 100% 60%;
+    --primary-foreground: 260 50% 8%;
   }
 }
 
@@ -67,7 +67,8 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: linear-gradient(135deg, hsl(var(--indigo-50)) 0%, white 100%);
+    background: linear-gradient(135deg, hsl(var(--cyan)) 0%, hsl(var(--magenta)) 100%);
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -76,16 +77,16 @@
 }
 
 @layer utilities {
-  .gradient-indigo {
-    background: linear-gradient(135deg, hsl(var(--indigo-500)) 0%, hsl(var(--indigo-600)) 100%);
+  .gradient-cyan-magenta {
+    background: linear-gradient(135deg, hsl(var(--cyan)) 0%, hsl(var(--magenta)) 100%);
   }
   
-  .gradient-indigo-dark {
-    background: linear-gradient(135deg, hsl(var(--indigo-600)) 0%, hsl(var(--indigo-700)) 100%);
+  .gradient-purple-magenta {
+    background: linear-gradient(135deg, hsl(var(--purple-gradient-start)) 0%, hsl(var(--purple-gradient-end)) 100%);
   }
 
-  .gradient-indigo-black {
-    background: linear-gradient(135deg, hsl(var(--indigo-600)) 0%, #000000 100%);
+  .gradient-dark-purple {
+    background: linear-gradient(135deg, hsl(var(--purple-dark)) 0%, hsl(var(--purple-gradient-start)) 100%);
   }
 
   .text-shadow {
@@ -93,10 +94,18 @@
   }
 
   .card-shadow {
-    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1), 0 2px 4px -1px rgba(99, 102, 241, 0.06);
+    box-shadow: 0 4px 6px -1px rgba(49, 196, 141, 0.1), 0 2px 4px -1px rgba(236, 72, 153, 0.06);
   }
 
   .card-shadow-lg {
-    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04);
+    box-shadow: 0 20px 25px -5px rgba(49, 196, 141, 0.1), 0 10px 10px -5px rgba(236, 72, 153, 0.04);
+  }
+
+  .bg-app-gradient {
+    background: linear-gradient(135deg, #31C48D 0%, #EC4899 100%);
+  }
+
+  .bg-purple-app {
+    background: linear-gradient(135deg, #4C1D95 0%, #7C3AED 50%, #EC4899 100%);
   }
 }
