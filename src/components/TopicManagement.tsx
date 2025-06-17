@@ -27,7 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 interface SuggestedTopic {
   id: string;
   topic_name: string;
-  category: string;
+  theme: string;
   description: string | null;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
@@ -43,13 +43,13 @@ const TopicManagement = () => {
   const addTopicForm = useForm({
     defaultValues: {
       topicName: '',
-      category: '',
+      theme: '',
       description: '',
       difficulty: 'Medium'
     }
   });
 
-  const categories = [
+  const themes = [
     'Technology',
     'Politics', 
     'Environment',
@@ -130,6 +130,21 @@ const TopicManagement = () => {
   const onAddTopic = async (values: any) => {
     setIsAddingTopic(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase
+        .from('debate_topics')
+        .insert({
+          theme: values.theme,
+          topic_name: values.topicName.trim(),
+          difficulty: values.difficulty,
+          user_id: user?.id || null,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      
       toast({
         title: "Topic Added",
         description: "New topic has been added to the debate topics",
@@ -209,20 +224,20 @@ const TopicManagement = () => {
 
                 <FormField
                   control={addTopicForm.control}
-                  name="category"
-                  rules={{ required: "Category is required" }}
+                  name="theme"
+                  rules={{ required: "Theme is required" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel>Theme</FormLabel>
                       <FormControl>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
+                            <SelectValue placeholder="Select theme" />
                           </SelectTrigger>
                           <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
+                            {themes.map((theme) => (
+                              <SelectItem key={theme} value={theme}>
+                                {theme}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -292,7 +307,7 @@ const TopicManagement = () => {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="suggestions">Student Suggestions</TabsTrigger>
           <TabsTrigger value="topics">Manage Topics</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="themes">Themes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="suggestions" className="space-y-4">
@@ -313,7 +328,7 @@ const TopicManagement = () => {
                       <div className="flex-1">
                         <CardTitle className="text-lg">{topic.topic_name}</CardTitle>
                         <CardDescription className="mt-1">
-                          Category: {topic.category}
+                          Theme: {topic.theme}
                         </CardDescription>
                         {topic.description && (
                           <p className="text-sm text-gray-600 mt-2">{topic.description}</p>
@@ -367,12 +382,12 @@ const TopicManagement = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="categories" className="space-y-4">
+        <TabsContent value="themes" className="space-y-4">
           <Card>
             <CardContent className="p-6 text-center">
               <Settings className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Category Management</h3>
-              <p className="text-gray-600">Manage debate categories (coming soon)</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Theme Management</h3>
+              <p className="text-gray-600">Manage debate themes (coming soon)</p>
             </CardContent>
           </Card>
         </TabsContent>
