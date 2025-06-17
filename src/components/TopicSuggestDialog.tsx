@@ -63,9 +63,9 @@ const TopicSuggestDialog = () => {
       const { error } = await supabase
         .from('suggested_topics')
         .insert({
-          category: values.theme, // Using category field instead of theme
+          theme: values.theme,
           topic_name: values.topicName.trim(),
-          student_id: user?.id || 'anonymous',
+          user_id: user?.id || null,
           status: 'pending'
         });
 

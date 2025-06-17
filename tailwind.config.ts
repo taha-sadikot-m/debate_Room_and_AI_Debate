@@ -56,24 +56,13 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// MyDebate.ai brand colors
-				cyan: {
-					400: '#22d3ee',
-					500: '#06b6d4',
-					600: '#0891b2',
-				},
-				pink: {
-					400: '#f472b6',
-					500: '#ec4899',
-					600: '#db2777',
-				},
-				purple: {
-					400: '#a855f7',
-					500: '#9333ea',
-					600: '#7c3aed',
-					700: '#6d28d9',
-					800: '#5b21b6',
-					900: '#4c1d95',
+				indigo: {
+					50: 'hsl(var(--indigo-50))',
+					100: 'hsl(var(--indigo-100))',
+					500: 'hsl(var(--indigo-500))',
+					600: 'hsl(var(--indigo-600))',
+					700: 'hsl(var(--indigo-700))',
+					900: 'hsl(var(--indigo-900))',
 				}
 			},
 			borderRadius: {
