@@ -138,7 +138,7 @@ const TopicManagement = () => {
           theme: values.theme,
           topic_name: values.topicName.trim(),
           difficulty: values.difficulty,
-          user_id: user?.id || null,
+          created_by: user?.id || null,
           status: 'pending'
         });
 
