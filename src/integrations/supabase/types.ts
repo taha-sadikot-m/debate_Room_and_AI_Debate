@@ -39,6 +39,48 @@ export type Database = {
         }
         Relationships: []
       }
+      debate_topics: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          student_id: string
+          theme: string | null
+          topic_name: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_id: string
+          theme?: string | null
+          topic_name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_id?: string
+          theme?: string | null
+          topic_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       freud_feedback: {
         Row: {
           analysis_reasoning: string | null
@@ -109,45 +151,6 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      suggested_topics: {
-        Row: {
-          category: string
-          created_at: string
-          description: string | null
-          id: string
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          student_id: string
-          topic_name: string
-          updated_at: string
-        }
-        Insert: {
-          category: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          student_id: string
-          topic_name: string
-          updated_at?: string
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          student_id?: string
-          topic_name?: string
           updated_at?: string
         }
         Relationships: []
