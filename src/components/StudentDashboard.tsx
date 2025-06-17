@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Coins, Trophy } from 'lucide-react';
 import MainMenuCard from '@/components/dashboard/MainMenuCard';
-import TopicSuggestDialog from '@/components/dialogs/TopicSuggestDialog'; // 👈 Add import
 
 interface StudentDashboardProps {
   userTokens: number;
@@ -70,19 +71,6 @@ const StudentDashboard = ({
           onPublicSpeaking={onPublicSpeaking}
           onDebatesHub={onDebatesHub}
         />
-
-        {/* 📢 Suggest a Topic Section */}
-        <Card className="card-shadow-lg border-2 border-cyan-300/30 bg-white/10 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-white text-xl">📢 Got an Idea for a Debate Topic?</CardTitle>
-            <CardDescription className="text-cyan-200">
-              Submit your suggestion and get it reviewed by our mentors!
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TopicSuggestDialog />
-          </CardContent>
-        </Card>
 
         {/* Quick Tips Section */}
         <Card className="card-shadow-lg border-2 border-cyan-300/30 bg-white/10 backdrop-blur-sm">
