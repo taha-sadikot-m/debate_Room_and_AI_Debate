@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,14 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import { 
-  Plus, 
-  Check, 
-  X, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Check,
+  X,
   Clock,
-  Eye,
   FileText,
   Settings
 } from 'lucide-react';
@@ -51,7 +47,7 @@ const TopicManagement = () => {
 
   const themes = [
     'Technology',
-    'Politics', 
+    'Politics',
     'Environment',
     'Education',
     'Health',
@@ -75,14 +71,13 @@ const TopicManagement = () => {
 
       if (error) throw error;
 
-      // Type assertion with proper filtering for status
       const typedData = (data || []).map(item => ({
         ...item,
-        status: (['pending', 'approved', 'rejected'].includes(item.status) 
-          ? item.status 
+        status: (['pending', 'approved', 'rejected'].includes(item.status)
+          ? item.status
           : 'pending') as 'pending' | 'approved' | 'rejected'
       })) as SuggestedTopic[];
-      
+
       setSuggestedTopics(typedData);
     } catch (error) {
       console.error('Error fetching suggested topics:', error);
@@ -99,7 +94,7 @@ const TopicManagement = () => {
   const updateTopicStatus = async (topicId: string, status: 'approved' | 'rejected') => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       const { error } = await supabase
         .from('suggested_topics')
         .update({
@@ -131,25 +126,25 @@ const TopicManagement = () => {
     setIsAddingTopic(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       const { error } = await supabase
         .from('debate_topics')
         .insert({
+          title: values.topicName.trim(), // 👈 Use `title` instead of `topic_name`
           theme: values.theme,
-          topic_name: values.topicName.trim(),
           difficulty: values.difficulty,
+          description: values.description?.trim() || null,
           created_by: user?.id || null,
           status: 'approved'
         });
 
       if (error) throw error;
 
-      
       toast({
         title: "Topic Added",
         description: "New topic has been added to the debate topics",
       });
-      
+
       addTopicForm.reset();
     } catch (error) {
       console.error('Error adding topic:', error);
@@ -192,7 +187,7 @@ const TopicManagement = () => {
           <h1 className="text-2xl font-bold text-gray-900">Topic Management</h1>
           <p className="text-gray-600">Manage student suggestions and debate topics</p>
         </div>
-        
+
         <Dialog>
           <DialogTrigger asChild>
             <Button>
@@ -204,7 +199,7 @@ const TopicManagement = () => {
             <DialogHeader>
               <DialogTitle>Add New Topic</DialogTitle>
             </DialogHeader>
-            
+
             <Form {...addTopicForm}>
               <form onSubmit={addTopicForm.handleSubmit(onAddTopic)} className="space-y-4">
                 <FormField
@@ -278,7 +273,7 @@ const TopicManagement = () => {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Topic description..."
                           className="min-h-[80px]"
                           {...field}
@@ -342,7 +337,7 @@ const TopicManagement = () => {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   {topic.status === 'pending' && (
                     <CardContent className="pt-0">
                       <div className="flex space-x-2">
