@@ -139,7 +139,7 @@ const TopicManagement = () => {
           topic_name: values.topicName.trim(),
           difficulty: values.difficulty,
           created_by: user?.id || null,
-          status: 'pending'
+          status: 'approved'
         });
 
       if (error) throw error;
