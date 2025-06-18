@@ -41,7 +41,8 @@ const TopicManagement = () => {
       topicName: '',
       theme: '',
       description: '',
-      difficulty: 'Medium'
+      difficulty: 'Medium',
+      timeEstimate: ''
     }
   });
 
@@ -130,10 +131,11 @@ const TopicManagement = () => {
       const { error } = await supabase
         .from('debate_topics')
         .insert({
-          title: values.topicName.trim(), // 👈 Use `title` instead of `topic_name`
+          title: values.topicName.trim(),
           theme: values.theme,
           difficulty: values.difficulty,
           description: values.description?.trim() || null,
+          time_estimate: values.timeEstimate.trim(),
           created_by: user?.id || null,
           status: 'approved'
         });
@@ -278,6 +280,21 @@ const TopicManagement = () => {
                           className="min-h-[80px]"
                           {...field}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={addTopicForm.control}
+                  name="timeEstimate"
+                  rules={{ required: "Time estimate is required" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Time Estimate</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 15 minutes" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
