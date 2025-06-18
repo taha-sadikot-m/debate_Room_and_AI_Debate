@@ -3,12 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, ArrowLeft, Target, Trophy, Plus } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { toast } from '@/components/ui/use-toast';
+import { Users, ArrowLeft, Target, Trophy } from 'lucide-react';
 
 interface OnlineUser {
   id: string;
@@ -26,7 +21,7 @@ interface Topic {
   description: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   category: string;
-  time_estimate: string;
+  timeEstimate: string;
   theme: string;
   aiArguments: {
     pro: string[];
@@ -46,13 +41,6 @@ const LiveDebateRoom = ({ difficulty, theme, onBack, onStartDebate }: LiveDebate
   const [selectedOpponent, setSelectedOpponent] = useState<OnlineUser | null>(null);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loadingTopics, setLoadingTopics] = useState(true);
-
-  // Suggest Topic Form States
-  const [newTitle, setNewTitle] = useState('');
-  const [newDesc, setNewDesc] = useState('');
-  const [newCategory, setNewCategory] = useState('');
-  const [newEstimate, setNewEstimate] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -78,40 +66,11 @@ const LiveDebateRoom = ({ difficulty, theme, onBack, onStartDebate }: LiveDebate
     fetchTopics();
   }, [difficulty, theme]);
 
-  const handleSuggestTopic = async () => {
-    if (!newTitle || !newDesc || !newCategory || !newEstimate) return;
-
-    setSubmitting(true);
-    const { error } = await supabase.from('debate_topics').insert([
-      {
-        title: newTitle,
-        description: newDesc,
-        category: newCategory,
-        time_estimate: newEstimate,
-        difficulty,
-        theme,
-        status: 'pending',
-        aiArguments: { pro: [], con: [] },
-      },
-    ]);
-
-    if (error) {
-      toast({ title: 'Error', description: 'Could not suggest topic. Try again later.' });
-    } else {
-      toast({ title: 'Success', description: 'Topic suggested successfully!' });
-      setNewTitle('');
-      setNewDesc('');
-      setNewCategory('');
-      setNewEstimate('');
-    }
-    setSubmitting(false);
-  };
-
   const mockUsers: OnlineUser[] = [
     {
       id: 'user-1',
       name: 'Alice Johnson',
-      avatar: '',
+      avatar: '/path/to/alice-avatar.jpg',
       level: 'Intermediate',
       tokens: 120,
       country: 'USA',
@@ -120,7 +79,7 @@ const LiveDebateRoom = ({ difficulty, theme, onBack, onStartDebate }: LiveDebate
     {
       id: 'user-2',
       name: 'Bob Williams',
-      avatar: '',
+      avatar: '/path/to/bob-avatar.jpg',
       level: 'Beginner',
       tokens: 85,
       country: 'Canada',
@@ -129,7 +88,7 @@ const LiveDebateRoom = ({ difficulty, theme, onBack, onStartDebate }: LiveDebate
     {
       id: 'user-3',
       name: 'Charlie Brown',
-      avatar: '',
+      avatar: '/path/to/charlie-avatar.jpg',
       level: 'Advanced',
       tokens: 210,
       country: 'UK',
@@ -152,45 +111,142 @@ const LiveDebateRoom = ({ difficulty, theme, onBack, onStartDebate }: LiveDebate
         </Button>
       </div>
 
-      <div className="flex justify-end mb-2">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="default">
-              <Plus className="mr-2 h-4 w-4" />
-              Suggest a Topic
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Suggest a New Topic</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div>
-                <Label>Title</Label>
-                <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Topics Section */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Target className="h-6 w-6 text-blue-600" />
+              <span>Available Topics</span>
+              <Badge className="bg-blue-100 text-blue-700">
+                {loadingTopics ? 'Loading...' : `${topics.length} topics`}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loadingTopics ? (
+              <p className="text-gray-500">Fetching topics...</p>
+            ) : (
+              <div className="space-y-3">
+                {topics.map((topic) => (
+                  <div
+                    key={topic.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      selectedTopic?.id === topic.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setSelectedTopic(topic)}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold">{topic.title}</h4>
+                      <Badge className="bg-gray-100 text-gray-700">{topic.timeEstimate}</Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{topic.description}</p>
+                    <div className="flex items-center space-x-2">
+                      <Badge className="bg-green-100 text-green-700">{topic.category}</Badge>
+                      <Badge
+                        className={
+                          topic.difficulty === 'Easy'
+                            ? 'bg-green-100 text-green-700'
+                            : topic.difficulty === 'Medium'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-red-100 text-red-700'
+                        }
+                      >
+                        {topic.difficulty}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div>
-                <Label>Description</Label>
-                <Textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} />
-              </div>
-              <div>
-                <Label>Category</Label>
-                <Input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} />
-              </div>
-              <div>
-                <Label>Estimated Time</Label>
-                <Input value={newEstimate} onChange={(e) => setNewEstimate(e.target.value)} />
-              </div>
-              <Button onClick={handleSuggestTopic} disabled={submitting}>
-                {submitting ? 'Submitting...' : 'Submit Suggestion'}
-              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Online Users Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Users className="h-6 w-6 text-green-600" />
+              <span>Online Opponents</span>
+              <Badge className="bg-green-100 text-green-700">
+                {availableUsers.length} available
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {availableUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                    selectedOpponent?.id === user.id
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setSelectedOpponent(user)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                      <Users className="h-5 w-5 text-gray-600" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium">{user.name}</h4>
+                        <Badge
+                          className={
+                            user.status === 'available'
+                              ? 'bg-green-100 text-green-700'
+                              : user.status === 'in-debate'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }
+                        >
+                          {user.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-sm text-gray-600">{user.country}</span>
+                        <Badge
+                          className={
+                            user.level === 'Beginner'
+                              ? 'bg-blue-100 text-blue-700'
+                              : user.level === 'Intermediate'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-purple-100 text-purple-700'
+                          }
+                        >
+                          {user.level}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs text-gray-500">{user.tokens} tokens</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </DialogContent>
-        </Dialog>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* --- Rest of your topic and user selection UI remains unchanged --- */}
-      {/* Insert your full topic and user card UI here like before */}
+      {/* Token Guarantee Section */}
+      <Card className="card-shadow border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-white">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Trophy className="h-6 w-6 text-yellow-600" />
+            <span>Token Guarantee</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-700">
+            Engage in live debates and earn tokens based on your performance.
+            Tokens can be used to unlock premium features and access exclusive content.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Start Debate Button */}
       <div className="flex justify-center">
