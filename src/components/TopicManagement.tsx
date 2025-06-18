@@ -1,21 +1,26 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card, CardContent, CardDescription, CardHeader, CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Tabs, TabsContent, TabsList, TabsTrigger,
+} from '@/components/ui/tabs';
+import {
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
+} from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import {
-  Plus,
-  Check,
-  X,
-  Clock,
-  FileText,
-  Settings
+  Plus, Check, X, Clock, FileText, Settings,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +42,7 @@ const TopicManagement = () => {
   const { toast } = useToast();
 
   const addTopicForm = useForm({
+    mode: 'onBlur',
     defaultValues: {
       topicName: '',
       theme: '',
@@ -47,16 +53,8 @@ const TopicManagement = () => {
   });
 
   const themes = [
-    'Technology',
-    'Politics',
-    'Environment',
-    'Education',
-    'Health',
-    'Food',
-    'Cinema',
-    'Sports',
-    'Economics',
-    'Social Issues'
+    'Technology', 'Politics', 'Environment', 'Education', 'Health',
+    'Food', 'Cinema', 'Sports', 'Economics', 'Social Issues'
   ];
 
   useEffect(() => {
@@ -94,6 +92,11 @@ const TopicManagement = () => {
 
   const updateTopicStatus = async (topicId: string, status: 'approved' | 'rejected') => {
     try {
+      if (status === 'rejected') {
+        const confirmReject = confirm("Are you sure you want to reject this topic?");
+        if (!confirmReject) return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
 
       const { error } = await supabase
@@ -178,10 +181,6 @@ const TopicManagement = () => {
     }
   };
 
-  if (loading) {
-    return <div className="p-6">Loading topic management...</div>;
-  }
-
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -190,7 +189,7 @@ const TopicManagement = () => {
           <p className="text-gray-600">Manage student suggestions and debate topics</p>
         </div>
 
-        <Dialog>
+        <Dialog onOpenChange={(open) => !open && addTopicForm.reset()}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -302,7 +301,7 @@ const TopicManagement = () => {
                 />
 
                 <div className="flex space-x-2 pt-4">
-                  <Button type="button" variant="outline" className="flex-1">
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => addTopicForm.reset()}>
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isAddingTopic} className="flex-1">
@@ -324,7 +323,13 @@ const TopicManagement = () => {
 
         <TabsContent value="suggestions" className="space-y-4">
           <div className="grid gap-4">
-            {suggestedTopics.length === 0 ? (
+            {loading ? (
+              <Card>
+                <CardContent className="p-6 text-center text-gray-600">
+                  Loading suggestions...
+                </CardContent>
+              </Card>
+            ) : suggestedTopics.length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
                   <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
