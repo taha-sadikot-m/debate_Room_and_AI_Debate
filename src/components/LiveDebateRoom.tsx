@@ -21,7 +21,7 @@ interface Topic {
   description: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   category: string;
-  timeEstimate: string;
+  time_estimate: string;
   theme: string;
   aiArguments: {
     pro: string[];
@@ -140,7 +140,7 @@ const LiveDebateRoom = ({ difficulty, theme, onBack, onStartDebate }: LiveDebate
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold">{topic.title}</h4>
-                      <Badge className="bg-gray-100 text-gray-700">{topic.timeEstimate}</Badge>
+                      <Badge className="bg-gray-100 text-gray-700">{topic.time_estimate}</Badge>
                     </div>
                     <p className="text-sm text-gray-600 mb-2">{topic.description}</p>
                     <div className="flex items-center space-x-2">
