@@ -1,32 +1,31 @@
-// teacher-side TopicManagement.tsx
-import { useState, useEffect } from 'react';
-import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle,
-  Button, Badge, Input, Textarea,
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-  Tabs, TabsContent, TabsList, TabsTrigger,
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage
-} from '@/components/ui';
+// ✅ REPLACEMENT TopicManagement.tsx
+
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Check, X, FileText, Settings, Clock } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { Plus, Check, X, Clock, FileText, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface DebateTopic {
+interface Topic {
   id: string;
   title: string;
   theme: string;
   description: string | null;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
-  created_by: string;
-  difficulty: string;
-  time_estimate: string;
 }
 
 const TopicManagement = () => {
-  const [topics, setTopics] = useState<DebateTopic[]>([]);
+  const [pendingTopics, setPendingTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingTopic, setIsAddingTopic] = useState(false);
   const { toast } = useToast();
@@ -41,163 +40,157 @@ const TopicManagement = () => {
     }
   });
 
-  const themes = ['Technology', 'Politics', 'Environment', 'Education', 'Health', 'Food', 'Cinema', 'Sports', 'Economics', 'Social Issues'];
+  const themes = ['Technology', 'Politics', 'Education', 'Environment', 'Health', 'Cinema'];
 
   useEffect(() => {
-    fetchTopics();
+    fetchPendingTopics();
   }, []);
 
-  const fetchTopics = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('debate_topics')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const fetchPendingTopics = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('debate_topics')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setTopics((data || []) as DebateTopic[]);
-    } catch (error) {
-      console.error('Error fetching topics:', error);
-      toast({ title: "Error", description: "Failed to load topics", variant: "destructive" });
-    } finally {
-      setLoading(false);
+    if (error) {
+      toast({ title: "Error", description: "Failed to load suggested topics", variant: "destructive" });
+    } else {
+      setPendingTopics(data || []);
     }
+    setLoading(false);
   };
 
-  const updateTopicStatus = async (topicId: string, status: 'approved' | 'rejected') => {
-    try {
-      const { error } = await supabase
-        .from('debate_topics')
-        .update({ status })
-        .eq('id', topicId);
+  const updateTopicStatus = async (id: string, status: 'approved' | 'rejected') => {
+    const { error } = await supabase
+      .from('debate_topics')
+      .update({ status })
+      .eq('id', id);
 
-      if (error) throw error;
-
-      toast({ title: "Success", description: `Topic ${status}` });
-      fetchTopics();
-    } catch (error) {
-      console.error('Error updating topic status:', error);
+    if (error) {
       toast({ title: "Error", description: "Failed to update topic status", variant: "destructive" });
+    } else {
+      toast({ title: "Success", description: `Topic ${status}` });
+      fetchPendingTopics();
     }
   };
 
   const onAddTopic = async (values: any) => {
     setIsAddingTopic(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-      const { error } = await supabase
-        .from('debate_topics')
-        .insert({
-          title: values.topicName.trim(),
-          theme: values.theme,
-          difficulty: values.difficulty,
-          description: values.description?.trim() || null,
-          time_estimate: values.timeEstimate.trim(),
-          created_by: user?.id || null,
-          status: 'approved'
-        });
+    const { error } = await supabase.from('debate_topics').insert({
+      title: values.topicName.trim(),
+      theme: values.theme,
+      difficulty: values.difficulty,
+      description: values.description?.trim() || null,
+      time_estimate: values.timeEstimate,
+      status: 'approved',
+      created_by: user?.id
+    });
 
-      if (error) throw error;
-
-      toast({ title: "Topic Added", description: "New topic has been added" });
-      addTopicForm.reset();
-      fetchTopics();
-    } catch (error) {
-      console.error('Error adding topic:', error);
+    if (error) {
       toast({ title: "Error", description: "Failed to add topic", variant: "destructive" });
-    } finally {
-      setIsAddingTopic(false);
+    } else {
+      toast({ title: "Success", description: "Topic added" });
+      addTopicForm.reset();
     }
+
+    setIsAddingTopic(false);
   };
-
-  const getStatusBadge = (status: string) => {
-    const map = {
-      pending: ['bg-yellow-100 text-yellow-700', <Clock className="h-3 w-3" />],
-      approved: ['bg-green-100 text-green-700', <Check className="h-3 w-3" />],
-      rejected: ['bg-red-100 text-red-700', <X className="h-3 w-3" />],
-    };
-    const [cls, icon] = map[status] || ['bg-gray-100 text-gray-700', null];
-    return <Badge className={cls}>{icon}<span className="ml-1 capitalize">{status}</span></Badge>;
-  };
-
-  const pendingTopics = topics.filter(t => t.status === 'pending');
-
-  if (loading) return <div className="p-6">Loading topic management...</div>;
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Topic Management</h1>
-          <p className="text-gray-600">Approve student suggestions and manage debate topics</p>
+          <h1 className="text-2xl font-bold">Topic Management</h1>
+          <p className="text-gray-600">Manage student suggestions and debate topics</p>
         </div>
-
         <Dialog>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" /> Add New Topic</Button>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Topic
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Add New Topic</DialogTitle></DialogHeader>
             <Form {...addTopicForm}>
               <form onSubmit={addTopicForm.handleSubmit(onAddTopic)} className="space-y-4">
-                <FormField control={addTopicForm.control} name="topicName" rules={{ required: "Required" }}
-                  render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={addTopicForm.control} name="theme" rules={{ required: "Required" }}
-                  render={({ field }) => (<FormItem><FormLabel>Theme</FormLabel><FormControl>
+                <FormField name="topicName" control={addTopicForm.control} rules={{ required: true }} render={({ field }) => (
+                  <FormItem><FormLabel>Topic Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField name="theme" control={addTopicForm.control} rules={{ required: true }} render={({ field }) => (
+                  <FormItem><FormLabel>Theme</FormLabel><FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger><SelectValue placeholder="Select theme" /></SelectTrigger>
-                      <SelectContent>{themes.map((theme) => <SelectItem key={theme} value={theme}>{theme}</SelectItem>)}</SelectContent>
-                    </Select></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={addTopicForm.control} name="difficulty"
-                  render={({ field }) => (<FormItem><FormLabel>Difficulty</FormLabel><FormControl>
+                      <SelectTrigger><SelectValue placeholder="Select a theme" /></SelectTrigger>
+                      <SelectContent>{themes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField name="difficulty" control={addTopicForm.control} render={({ field }) => (
+                  <FormItem><FormLabel>Difficulty</FormLabel><FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent><SelectItem value="Easy">Easy</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="Hard">Hard</SelectItem></SelectContent>
-                    </Select></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={addTopicForm.control} name="description"
-                  render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={addTopicForm.control} name="timeEstimate" rules={{ required: "Required" }}
-                  render={({ field }) => (<FormItem><FormLabel>Time Estimate</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <div className="flex space-x-2 pt-4">
-                  <Button type="button" variant="outline" className="flex-1">Cancel</Button>
-                  <Button type="submit" disabled={isAddingTopic} className="flex-1">{isAddingTopic ? 'Adding...' : 'Add Topic'}</Button>
-                </div>
+                      <SelectContent>
+                        <SelectItem value="Easy">Easy</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="Hard">Hard</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl></FormItem>
+                )} />
+                <FormField name="description" control={addTopicForm.control} render={({ field }) => (
+                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl></FormItem>
+                )} />
+                <FormField name="timeEstimate" control={addTopicForm.control} render={({ field }) => (
+                  <FormItem><FormLabel>Time Estimate</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
+                <Button type="submit" className="w-full">{isAddingTopic ? "Adding..." : "Add Topic"}</Button>
               </form>
             </Form>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Tabs defaultValue="pending" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="pending">Student Suggestions</TabsTrigger>
-          <TabsTrigger value="all">All Topics</TabsTrigger>
+      <Tabs defaultValue="suggestions">
+        <TabsList className="grid grid-cols-3 w-full mb-4">
+          <TabsTrigger value="suggestions">Student Suggestions</TabsTrigger>
+          <TabsTrigger value="topics">Manage Topics</TabsTrigger>
+          <TabsTrigger value="themes">Themes</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="pending" className="space-y-4">
-          {pendingTopics.length === 0 ? (
-            <Card><CardContent className="p-6 text-center"><FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" /><p>No suggestions yet</p></CardContent></Card>
-          ) : pendingTopics.map((topic) => (
-            <Card key={topic.id}><CardHeader><CardTitle>{topic.title}</CardTitle><CardDescription>{topic.description}</CardDescription></CardHeader>
-              <CardContent className="space-y-2">
-                <p>Theme: {topic.theme}</p>
-                {getStatusBadge(topic.status)}
-                <div className="flex gap-2">
-                  <Button onClick={() => updateTopicStatus(topic.id, 'approved')}><Check className="w-4 h-4 mr-1" /> Approve</Button>
-                  <Button variant="outline" onClick={() => updateTopicStatus(topic.id, 'rejected')}><X className="w-4 h-4 mr-1" /> Reject</Button>
-                </div>
+        <TabsContent value="suggestions">
+          {loading ? <p>Loading...</p> : (
+            pendingTopics.length === 0 ? (
+              <Card><CardContent className="p-6 text-center">
+                <FileText className="w-10 h-10 mx-auto mb-4 text-gray-400" />
+                <h3 className="font-semibold">No suggestions yet</h3>
+                <p className="text-gray-500">Student topic suggestions will appear here</p>
               </CardContent></Card>
-          ))}
+            ) : pendingTopics.map(topic => (
+              <Card key={topic.id}>
+                <CardHeader>
+                  <CardTitle>{topic.title}</CardTitle>
+                  <CardDescription>{topic.theme}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex gap-2">
+                  <Button onClick={() => updateTopicStatus(topic.id, 'approved')}>
+                    <Check className="w-4 h-4 mr-1" /> Approve
+                  </Button>
+                  <Button variant="outline" onClick={() => updateTopicStatus(topic.id, 'rejected')}>
+                    <X className="w-4 h-4 mr-1" /> Reject
+                  </Button>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </TabsContent>
-
-        <TabsContent value="all">
-          <div className="grid gap-4">
-            {topics.map((topic) => (
-              <Card key={topic.id}><CardHeader><CardTitle>{topic.title}</CardTitle><CardDescription>{topic.description}</CardDescription></CardHeader>
-                <CardContent>{getStatusBadge(topic.status)}</CardContent></Card>
-            ))}
-          </div>
+        <TabsContent value="topics">
+          <Card><CardContent className="p-6 text-center text-gray-500">Coming soon</CardContent></Card>
+        </TabsContent>
+        <TabsContent value="themes">
+          <Card><CardContent className="p-6 text-center text-gray-500">Coming soon</CardContent></Card>
         </TabsContent>
       </Tabs>
     </div>
