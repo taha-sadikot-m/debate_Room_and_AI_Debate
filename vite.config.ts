@@ -11,9 +11,8 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      // Ensure proper JSX runtime for both dev and production
-      jsxRuntime: mode === 'production' ? 'automatic' : 'automatic',
-      devTarget: 'es2020',
+      // Use classic JSX runtime for better compatibility
+      jsxRuntime: 'classic',
     }),
     // Only use component tagger in development
     ...(mode === 'development' ? [componentTagger()] : []),
@@ -34,11 +33,6 @@ export default defineConfig(({ mode }) => ({
         manualChunks: undefined,
       },
     },
-  },
-  esbuild: {
-    // Ensure proper JSX runtime
-    jsx: 'automatic',
-    jsxDev: mode === 'development',
   },
   define: {
     // Ensure proper environment variables
