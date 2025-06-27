@@ -4,6 +4,12 @@ import MunModeView from '@/components/views/MunModeView';
 import DebateFlowViews from '@/components/views/DebateFlowViews';
 import UtilityViews from '@/components/views/UtilityViews';
 import MunViews from '@/components/views/MunViews';
+import InstantDebateSetup from '@/components/InstantDebateSetup';
+import InstantDebateRoomV2 from '@/components/InstantDebateRoomV2';
+import InstantDebateTest from '@/components/InstantDebateTest';
+import InstantDebateEvaluation from '@/components/InstantDebateEvaluation';
+import InstantDebateHistory from '@/components/InstantDebateHistory';
+import InstantDebateViewer from '@/components/InstantDebateViewer';
 
 interface Topic {
   id: string;
@@ -19,6 +25,12 @@ interface Topic {
   };
 }
 
+interface DebateConfig {
+  topic: string;
+  userPosition: 'for' | 'against';
+  firstSpeaker: 'user' | 'ai';
+}
+
 interface ViewManagerProps {
   currentView: string;
   userRole: 'student' | 'teacher';
@@ -32,8 +44,15 @@ interface ViewManagerProps {
   selectedProcedureType: 'UNA-USA' | 'Indian Parliamentary' | null;
   selectedLanguage: string;
   selectedDebateFormat: '1v1' | '3v3';
+  instantDebateConfig: DebateConfig | null;
+  currentDebateData?: {
+    config: DebateConfig;
+    messages: any[];
+  } | null;
+  selectedDebateRecord?: any;
   handlers: {
     handleStartDebate: () => void;
+    handleInstantDebate: () => void;
     handleDebateLive: () => void;
     handleJoinMUN: () => void;
     handleCreateDebateRoom: () => void;
@@ -54,6 +73,12 @@ interface ViewManagerProps {
     handleLiveDebateFormatSelect: (format: '1v1' | '3v3', language: string) => void;
     handlePublicSpeaking: () => void;
     handleDebatesHub: () => void;
+    handleInstantDebateStart: (config: DebateConfig) => void;
+    handleInstantDebateBack: () => void;
+    handleInstantDebateComplete: (config: DebateConfig, messages: any[]) => void;
+    handleInstantDebateHistory: () => void;
+    handleStartNewDebate: () => void;
+    handleViewDebate: (debate: any) => void;
   };
 }
 
@@ -70,6 +95,9 @@ const ViewManager = ({
   selectedProcedureType,
   selectedLanguage,
   selectedDebateFormat,
+  instantDebateConfig,
+  currentDebateData,
+  selectedDebateRecord,
   handlers
 }: ViewManagerProps) => {
   const renderView = () => {
@@ -80,6 +108,104 @@ const ViewManager = ({
             userRole={userRole}
             userTokens={userTokens}
             handlers={handlers}
+          />
+        );
+
+      case 'instant-debate-test':
+        return <InstantDebateTest />;
+
+      case 'instant-debate-setup':
+        return (
+          <InstantDebateSetup
+            onStartDebate={handlers.handleInstantDebateStart}
+            onBack={handlers.handleBackToDashboard}
+          />
+        );
+
+      case 'instant-debate-room':
+        console.log('ViewManager rendering instant-debate-room with config:', instantDebateConfig);
+        if (!instantDebateConfig) {
+          console.error('No instant debate config available, redirecting to setup');
+          // Use useEffect or return a component that handles navigation to avoid setState during render
+          return (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">No debate configuration found.</p>
+                <button 
+                  onClick={() => handlers.handleInstantDebate()}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Go to Setup
+                </button>
+              </div>
+            </div>
+          );
+        }
+        return (
+          <InstantDebateRoomV2
+            config={instantDebateConfig}
+            onBack={handlers.handleInstantDebateBack}
+            onExit={handlers.handleExitDebate}
+            onDebateComplete={handlers.handleInstantDebateComplete}
+          />
+        );
+
+      case 'instant-debate-evaluation':
+        if (!currentDebateData) {
+          return (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">No debate data available for evaluation.</p>
+                <button 
+                  onClick={() => handlers.handleInstantDebate()}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Start New Debate
+                </button>
+              </div>
+            </div>
+          );
+        }
+        return (
+          <InstantDebateEvaluation
+            config={currentDebateData.config}
+            messages={currentDebateData.messages}
+            onBack={handlers.handleInstantDebateBack}
+            onNewDebate={handlers.handleStartNewDebate}
+            onViewHistory={handlers.handleInstantDebateHistory}
+          />
+        );
+
+      case 'instant-debate-history':
+        return (
+          <InstantDebateHistory
+            onBack={handlers.handleBackToDashboard}
+            onViewDebate={handlers.handleViewDebate}
+            onNewDebate={handlers.handleStartNewDebate}
+          />
+        );
+
+      case 'instant-debate-viewer':
+        if (!selectedDebateRecord) {
+          return (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">No debate selected for viewing.</p>
+                <button 
+                  onClick={() => handlers.handleInstantDebateHistory()}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  View History
+                </button>
+              </div>
+            </div>
+          );
+        }
+        return (
+          <InstantDebateViewer
+            debate={selectedDebateRecord}
+            onBack={handlers.handleInstantDebateHistory}
+            onViewEvaluation={() => {}} // Could be extended later
           />
         );
 

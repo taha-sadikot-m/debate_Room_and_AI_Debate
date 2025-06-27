@@ -7,6 +7,7 @@ interface DashboardViewProps {
   userTokens: number;
   handlers: {
     handleStartDebate: () => void;
+    handleInstantDebate: () => void;
     handleDebateLive: () => void;
     handleJoinMUN: () => void;
     handleCreateDebateRoom: () => void;
@@ -23,6 +24,7 @@ const DashboardView = ({ userRole, userTokens, handlers }: DashboardViewProps) =
     <StudentDashboard 
       userTokens={userTokens} 
       onStartDebate={handlers.handleStartDebate}
+      onInstantDebate={handlers.handleInstantDebate}
       onDebateLive={handlers.handleDebateLive}
       onJoinMUN={handlers.handleJoinMUN}
       onCreateDebateRoom={handlers.handleCreateDebateRoom}

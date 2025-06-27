@@ -3,8 +3,13 @@ import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import ViewManager from '@/components/ViewManager';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
-import { useAuth } from '@/hooks/useAuth';
 import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
+
+interface DebateConfig {
+  topic: string;
+  userPosition: 'for' | 'against';
+  firstSpeaker: 'user' | 'ai';
+}
 
 interface Topic {
   id: string;
@@ -21,7 +26,10 @@ interface Topic {
 }
 
 const AuthenticatedApp = () => {
-  const { user, signOut } = useAuth();
+  // Mock user data for testing (bypass authentication)
+  const mockUser = { id: '1', email: 'test@example.com', name: 'Test User' };
+  const mockSignOut = () => console.log('Sign out clicked');
+  
   const [userRole, setUserRole] = useState<'student' | 'teacher'>('student');
   const [userTokens, setUserTokens] = useState(156);
   const [currentView, setCurrentView] = useState<string>('dashboard');
@@ -34,6 +42,9 @@ const AuthenticatedApp = () => {
   const [selectedProcedureType, setSelectedProcedureType] = useState<'UNA-USA' | 'Indian Parliamentary' | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
   const [selectedDebateFormat, setSelectedDebateFormat] = useState<'1v1' | '3v3'>('1v1');
+  const [instantDebateConfig, setInstantDebateConfig] = useState<DebateConfig | null>(null);
+  const [currentDebateData, setCurrentDebateData] = useState<{config: DebateConfig; messages: any[]} | null>(null);
+  const [selectedDebateRecord, setSelectedDebateRecord] = useState<any>(null);
 
   const handlers = useAppHandlers({
     setCurrentView,
@@ -46,7 +57,10 @@ const AuthenticatedApp = () => {
     setSelectedProcedureType,
     setUserTokens,
     setSelectedLanguage,
-    setSelectedDebateFormat
+    setSelectedDebateFormat,
+    setInstantDebateConfig,
+    setCurrentDebateData,
+    setSelectedDebateRecord
   });
 
   const handleGetPremium = () => {
@@ -60,8 +74,8 @@ const AuthenticatedApp = () => {
         userRole={userRole} 
         onRoleSwitch={setUserRole}
         onGetPremium={handleGetPremium}
-        onSignOut={signOut}
-        user={user}
+        onSignOut={mockSignOut}
+        user={mockUser}
       />
       
       <main className="animate-fade-in">
@@ -78,6 +92,9 @@ const AuthenticatedApp = () => {
           selectedProcedureType={selectedProcedureType}
           selectedLanguage={selectedLanguage}
           selectedDebateFormat={selectedDebateFormat}
+          instantDebateConfig={instantDebateConfig}
+          currentDebateData={currentDebateData}
+          selectedDebateRecord={selectedDebateRecord}
           handlers={handlers}
         />
       </main>

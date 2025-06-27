@@ -5,6 +5,12 @@ import ViewManager from '@/components/ViewManager';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
 import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
 
+interface DebateConfig {
+  topic: string;
+  userPosition: 'for' | 'against';
+  firstSpeaker: 'user' | 'ai';
+}
+
 interface Topic {
   id: string;
   title: string;
@@ -44,6 +50,9 @@ const App = () => {
   const [selectedProcedureType, setSelectedProcedureType] = useState<'UNA-USA' | 'Indian Parliamentary' | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
   const [selectedDebateFormat, setSelectedDebateFormat] = useState<'1v1' | '3v3'>('1v1');
+  const [instantDebateConfig, setInstantDebateConfig] = useState<DebateConfig | null>(null);
+  const [currentDebateData, setCurrentDebateData] = useState<{config: DebateConfig; messages: any[]} | null>(null);
+  const [selectedDebateRecord, setSelectedDebateRecord] = useState<any>(null);
 
   const handlers = useAppHandlers({
     setCurrentView,
@@ -56,7 +65,10 @@ const App = () => {
     setSelectedProcedureType,
     setUserTokens,
     setSelectedLanguage,
-    setSelectedDebateFormat
+    setSelectedDebateFormat,
+    setInstantDebateConfig,
+    setCurrentDebateData,
+    setSelectedDebateRecord
   });
 
   const handleGetPremium = () => {
@@ -93,6 +105,9 @@ const App = () => {
           selectedProcedureType={selectedProcedureType}
           selectedLanguage={selectedLanguage}
           selectedDebateFormat={selectedDebateFormat}
+          instantDebateConfig={instantDebateConfig}
+          currentDebateData={currentDebateData}
+          selectedDebateRecord={selectedDebateRecord}
           handlers={handlers}
         />
       </main>

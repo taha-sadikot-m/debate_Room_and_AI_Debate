@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
 
 interface Topic {
@@ -15,6 +15,12 @@ interface Topic {
   };
 }
 
+interface DebateConfig {
+  topic: string;
+  userPosition: 'for' | 'against';
+  firstSpeaker: 'user' | 'ai';
+}
+
 interface UseAppHandlersProps {
   setCurrentView: (view: string) => void;
   setSelectedDifficulty: (difficulty: 'Easy' | 'Medium' | 'Hard') => void;
@@ -27,6 +33,9 @@ interface UseAppHandlersProps {
   setUserTokens: (tokens: number | ((prev: number) => number)) => void;
   setSelectedLanguage: (language: string) => void;
   setSelectedDebateFormat: (format: '1v1' | '3v3') => void;
+  setInstantDebateConfig: (config: DebateConfig) => void;
+  setCurrentDebateData: (data: {config: DebateConfig; messages: any[]} | null) => void;
+  setSelectedDebateRecord: (record: any) => void;
 }
 
 export const useAppHandlers = ({
@@ -40,10 +49,19 @@ export const useAppHandlers = ({
   setSelectedProcedureType,
   setUserTokens,
   setSelectedLanguage,
-  setSelectedDebateFormat
+  setSelectedDebateFormat,
+  setInstantDebateConfig,
+  setCurrentDebateData,
+  setSelectedDebateRecord
 }: UseAppHandlersProps) => {
   const handleStartDebate = () => {
     setCurrentView('difficulty');
+  };
+
+  const handleInstantDebate = () => {
+    // Navigate to instant debate history first (better UX)
+    console.log('handleInstantDebate called - navigating to instant-debate-history');
+    setCurrentView('instant-debate-history');
   };
 
   const handleJoinMUN = () => {
@@ -156,8 +174,44 @@ export const useAppHandlers = ({
     setCurrentView('debates-hub');
   };
 
+  const handleInstantDebateStart = (config: DebateConfig) => {
+    setInstantDebateConfig(config);
+    setCurrentView('instant-debate-room');
+  };
+
+  const handleInstantDebateBack = () => {
+    console.log('handleInstantDebateBack called');
+    setCurrentView('instant-debate-setup');
+  };
+
+  const handleInstantDebateComplete = (config: DebateConfig, messages: any[]) => {
+    console.log('handleInstantDebateComplete called with:', { config, messages });
+    // Store the debate data for evaluation
+    const debateData = { config, messages };
+    setCurrentDebateData(debateData);
+    setCurrentView('instant-debate-evaluation');
+  };
+
+  const handleInstantDebateHistory = () => {
+    console.log('handleInstantDebateHistory called');
+    setCurrentView('instant-debate-history');
+  };
+
+  const handleStartNewDebate = () => {
+    console.log('handleStartNewDebate called - navigating to setup');
+    setCurrentView('instant-debate-setup');
+  };
+
+  const handleViewDebate = (debate: any) => {
+    console.log('handleViewDebate called with:', debate);
+    // Store the selected debate for viewing
+    setSelectedDebateRecord(debate);
+    setCurrentView('instant-debate-viewer');
+  };
+
   return {
     handleStartDebate,
+    handleInstantDebate,
     handleJoinMUN,
     handleCreateDebateRoom,
     handleViewEvents,
@@ -177,6 +231,12 @@ export const useAppHandlers = ({
     handleLiveDebateFormatSelect,
     handleDebateLive,
     handlePublicSpeaking,
-    handleDebatesHub
+    handleDebatesHub,
+    handleInstantDebateStart,
+    handleInstantDebateBack,
+    handleInstantDebateComplete,
+    handleInstantDebateHistory,
+    handleStartNewDebate,
+    handleViewDebate
   };
 };

@@ -4,6 +4,7 @@ import { Bot, Users, Settings, Calendar, BookOpen, Zap, Crown, Globe, Newspaper 
 
 interface MainMenuCardProps {
   onStartDebate: () => void;
+  onInstantDebate: () => void;
   onDebateLive: () => void;
   onJoinMUN: () => void;
   onCreateDebateRoom: () => void;
@@ -15,6 +16,7 @@ interface MainMenuCardProps {
 
 const MainMenuCard = ({ 
   onStartDebate, 
+  onInstantDebate,
   onDebateLive,
   onJoinMUN,
   onCreateDebateRoom, 
@@ -24,6 +26,18 @@ const MainMenuCard = ({
   onDebatesHub
 }: MainMenuCardProps) => {
   const menuItems = [
+    {
+      icon: Bot,
+      title: '🤖 Instant Debate',
+      description: 'Debate with AI on any topic in seconds',
+      onClick: () => {
+        console.log('Instant Debate card clicked');
+        onInstantDebate();
+      },
+      borderColor: 'border-indigo-200',
+      bgGradient: 'from-indigo-50 to-white',
+      iconBg: 'bg-indigo-500'
+    },
     {
       icon: Zap,
       title: '⚡ Debate Live',

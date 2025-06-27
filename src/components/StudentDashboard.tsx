@@ -9,6 +9,7 @@ import MainMenuCard from '@/components/dashboard/MainMenuCard';
 interface StudentDashboardProps {
   userTokens: number;
   onStartDebate: () => void;
+  onInstantDebate: () => void;
   onDebateLive: () => void;
   onJoinMUN: () => void;
   onCreateDebateRoom: () => void;
@@ -22,6 +23,7 @@ interface StudentDashboardProps {
 const StudentDashboard = ({ 
   userTokens, 
   onStartDebate, 
+  onInstantDebate,
   onDebateLive,
   onJoinMUN, 
   onCreateDebateRoom, 
@@ -62,6 +64,7 @@ const StudentDashboard = ({
       {/* Main Menu */}
       <MainMenuCard 
         onStartDebate={onStartDebate}
+        onInstantDebate={onInstantDebate}
         onDebateLive={onDebateLive}
         onJoinMUN={onJoinMUN}
         onCreateDebateRoom={onCreateDebateRoom}

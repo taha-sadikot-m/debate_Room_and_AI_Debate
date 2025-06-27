@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Test User - MyDebate.AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #4F46E5;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #3730A3;
+        }
+        .success {
+            color: #059669;
+            background-color: #ECFDF5;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .error {
+            color: #DC2626;
+            background-color: #FEF2F2;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .info {
+            color: #1D4ED8;
+            background-color: #EFF6FF;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px 0;
+            border: 1px solid #D1D5DB;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Test User for MyDebate.AI</h1>
+        <p>Use this tool to create a test user account for development and testing.</p>
+        
+        <div id="result"></div>
+        
+        <form id="createUserForm">
+            <label for="email">Email:</label>
+            <input type="email" id="email" value="testuser@mydebate.ai" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="TestPass123!" required>
+            
+            <label for="fullName">Full Name:</label>
+            <input type="text" id="fullName" value="Test Student" required>
+            
+            <button type="submit">Create Test User</button>
+        </form>
+        
+        <hr style="margin: 30px 0;">
+        
+        <h3>Quick Actions:</h3>
+        <button onclick="createDefaultUser()">Create Default Test User</button>
+        <button onclick="goToApp()">Go to MyDebate.AI App</button>
+        
+        <div class="info">
+            <strong>Default Test Credentials:</strong><br>
+            Email: testuser@mydebate.ai<br>
+            Password: TestPass123!
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://dynelmjgdqjzwtrpxttx.supabase.co";
+        const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5bmVsbWpnZHFqend0cnB4dHR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MzA4NzksImV4cCI6MjA2NTMwNjg3OX0.mz1q_H9ti9hAXOk2lOAY4vqgzxbPu-Pjf0V7hCpZzL4";
+        
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+        
+        async function createUser(email, password, fullName) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">Creating user...</div>';
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: fullName
+                        }
+                    }
+                });
+
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error"><strong>Error:</strong> ${error.message}</div>`;
+                    return;
+                }
+
+                let successMessage = `
+                    <div class="success">
+                        <strong>✅ Test user created successfully!</strong><br><br>
+                        <strong>Login Credentials:</strong><br>
+                        Email: ${email}<br>
+                        Password: ${password}<br>
+                        Full Name: ${fullName}<br>
+                `;
+
+                if (data.user) {
+                    successMessage += `User ID: ${data.user.id}<br>`;
+                    
+                    if (!data.user.email_confirmed_at) {
+                        successMessage += `
+                            <br><strong>⚠️ Note:</strong> Email confirmation may be required. 
+                            Check your Supabase dashboard to confirm the user or disable email confirmation in your project settings.
+                        `;
+                    }
+                }
+
+                successMessage += '</div>';
+                resultDiv.innerHTML = successMessage;
+
+            } catch (err) {
+                resultDiv.innerHTML = `<div class="error"><strong>Unexpected error:</strong> ${err.message}</div>`;
+            }
+        }
+        
+        async function createDefaultUser() {
+            await createUser('testuser@mydebate.ai', 'TestPass123!', 'Test Student');
+        }
+        
+        function goToApp() {
+            window.open('http://localhost:8082', '_blank');
+        }
+        
+        document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const fullName = document.getElementById('fullName').value;
+            
+            await createUser(email, password, fullName);
+        });
+    </script>
+</body>
+</html>

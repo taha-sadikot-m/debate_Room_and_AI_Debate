@@ -137,10 +137,14 @@ const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     setGoogleLoading(true);
     
     try {
+      // Use current origin for local development
+      const redirectUrl = window.location.origin + '/';
+      console.log('Google OAuth redirect URL:', redirectUrl);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: redirectUrl
         }
       });
 
