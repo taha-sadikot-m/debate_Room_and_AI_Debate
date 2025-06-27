@@ -10,7 +10,11 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
+    react({
+      // Ensure proper JSX runtime for both dev and production
+      jsxRuntime: mode === 'production' ? 'automatic' : 'automatic',
+      devTarget: 'es2020',
+    }),
     // Only use component tagger in development
     ...(mode === 'development' ? [componentTagger()] : []),
   ],
@@ -23,10 +27,21 @@ export default defineConfig(({ mode }) => ({
     target: 'es2020',
     minify: 'esbuild',
     sourcemap: false,
+    outDir: 'dist',
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         manualChunks: undefined,
       },
     },
+  },
+  esbuild: {
+    // Ensure proper JSX runtime
+    jsx: 'automatic',
+    jsxDev: mode === 'development',
+  },
+  define: {
+    // Ensure proper environment variables
+    'process.env.NODE_ENV': JSON.stringify(mode),
   },
 }));
