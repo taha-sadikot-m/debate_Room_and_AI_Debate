@@ -10,10 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react({
-      // Use classic JSX runtime for better compatibility
-      jsxRuntime: 'classic',
-    }),
+    react(),
     // Only use component tagger in development
     ...(mode === 'development' ? [componentTagger()] : []),
   ],
