@@ -14,7 +14,7 @@ import EnhancedTopicSelection from '@/components/EnhancedTopicSelection';
 import AdvancedTopicManager from '@/components/AdvancedTopicManager';
 import LiveDebateRoomV3 from '@/components/LiveDebateRoomV3';
 import RealTimeDebateRoom from '@/components/RealTimeDebateRoom';
-import HumanDebateRoom from '@/components/HumanDebateRoom';
+import HumanDebateRoom from '@/components/HumanDebateRoomNew';
 import HumanDebateHistory from '@/components/HumanDebateHistory';
 import HumanDebateViewer from '@/components/HumanDebateViewer';
 import { LiveDebateTopic } from '@/data/liveDebateTopics';

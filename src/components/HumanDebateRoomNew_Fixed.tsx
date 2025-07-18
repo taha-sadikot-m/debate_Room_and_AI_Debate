@@ -95,6 +95,7 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
     return result;
   }
 
+  // Initialize room
   useEffect(() => {
     if (isCreatingRoom) {
       setRoomId(generateRoomId());
@@ -108,19 +109,19 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
       
       // Clean up room data from localStorage if host
       if (isRoomHost && roomId) {
-        cleanupRoom();
+        localStorage.removeItem(`debate_room_${roomId}`);
       }
       
       // Make sure to clean up video streams and WebRTC connections
       cleanupVideo();
     }
   }, [isCreatingRoom]);
-  
+
   // Always scroll to bottom when new messages arrive
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  
+
   // Real-time connection management
   useEffect(() => {
     if (!roomId || !isRoomActive) return;
@@ -137,7 +138,170 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
     loadRoomMessages();
     
   }, [roomId, isRoomActive]);
+
+  // Effect to handle delayed video offer processing
+  useEffect(() => {
+    if (videoOffer && stream) {
+      // Now that we have the stream, we can process the stored offer
+      handleReceivedOffer(videoOffer);
+      // Clear the stored offer after processing
+      setVideoOffer(null);
+    }
+  }, [videoOffer, stream]);
+
+  // Check if there are active videos when the opponent connection changes
+  useEffect(() => {
+    if (opponentConnected && isCameraOn && stream) {
+      // If we're the host, initiate the connection
+      if (isRoomHost) {
+        initiatePeerConnection(stream);
+      }
+    }
+  }, [opponentConnected, isCameraOn]);
   
+  // Check for opponent whenever users list changes
+  useEffect(() => {
+    checkForOpponent();
+  }, [users]);
+
+  // Update video element when stream changes
+  useEffect(() => {
+    if (myVideoRef.current && stream) {
+      myVideoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+
+  // Update remote video element when remoteStream changes
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
+
+  // Check if there are opponents in the room
+  const checkForOpponent = () => {
+    // Filter users who aren't the current user and have selected a debate side (not observers or evaluators)
+    const opponents = users.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
+    
+    // If there's at least one opponent, mark opponent as connected
+    setOpponentConnected(opponents.length > 0);
+  }
+
+  // Helper functions for user presence
+  const updateAllUsers = (presences: any[]) => {
+    console.log('Updating all users with presence data:', presences);
+    const allUsers = presences.map((presence: any) => ({
+      id: presence.id || presence.key,
+      name: presence.name || 'Guest',
+      side: presence.side,
+      isActive: presence.isActive || true,
+      lastSeen: presence.lastSeen || Date.now(),
+    }));
+    
+    // Replace the entire users list with the current presence state
+    setUsers(allUsers);
+    console.log('Updated users list:', allUsers);
+    
+    // Update opponent connection status
+    const opponents = allUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
+    setOpponentConnected(opponents.length > 0);
+  }
+  
+  const updateUsersPresence = (presences: any[]) => {
+    console.log('Updating users presence with new data:', presences);
+    const newUsers = presences.map((presence: any) => ({
+      id: presence.id || presence.key,
+      name: presence.name || 'Guest',
+      side: presence.side,
+      isActive: presence.isActive || true,
+      lastSeen: presence.lastSeen || Date.now(),
+    }));
+    
+    setUsers(prevUsers => {
+      // Merge with existing users, updating any that already exist
+      const existingUserIds = prevUsers.map(u => u.id);
+      const newUsersToAdd = newUsers.filter(u => !existingUserIds.includes(u.id));
+      const updatedExistingUsers = prevUsers.map(existingUser => {
+        const matchingNewUser = newUsers.find(newUser => newUser.id === existingUser.id);
+        return matchingNewUser || existingUser;
+      });
+      
+      const updatedUsers = [...updatedExistingUsers, ...newUsersToAdd];
+      console.log('Updated users after presence update:', updatedUsers);
+      
+      // Update opponent connection status
+      const opponents = updatedUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
+      setOpponentConnected(opponents.length > 0);
+      
+      return updatedUsers;
+    });
+  };
+
+  const removeUserPresence = (presences: any[]) => {
+    const userIdsToRemove = presences.map(p => p.id || p.key);
+    setUsers(prevUsers => {
+      const filteredUsers = prevUsers.filter(user => !userIdsToRemove.includes(user.id));
+      
+      // Update opponent connection status
+      const opponents = filteredUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
+      setOpponentConnected(opponents.length > 0);
+      
+      return filteredUsers;
+    });
+  };
+
+  const updateUserSide = (userId: string, side: 'FOR' | 'AGAINST' | 'OBSERVER' | 'EVALUATOR') => {
+    setUsers(prevUsers => {
+      const updatedUsers = prevUsers.map(user => 
+        user.id === userId ? { ...user, side } : user
+      );
+      
+      // Update opponent connection status
+      const opponents = updatedUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
+      setOpponentConnected(opponents.length > 0);
+      
+      return updatedUsers;
+    });
+  };
+
+  // Message handling
+  const addMessage = (message: DebateMessage) => {
+    setMessages(prev => {
+      // Prevent duplicate messages
+      if (prev.some(m => m.id === message.id)) {
+        return prev;
+      }
+      return [...prev, message];
+    });
+    
+    // Store messages in localStorage for persistence
+    const roomMessages = JSON.parse(localStorage.getItem(`debate_room_${roomId}_messages`) || '[]');
+    if (!roomMessages.some((m: DebateMessage) => m.id === message.id)) {
+      const updatedMessages = [...roomMessages, message];
+      localStorage.setItem(`debate_room_${roomId}_messages`, JSON.stringify(updatedMessages));
+    }
+    
+    scrollToBottom();
+  };
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  // Load existing messages for this room from localStorage
+  const loadRoomMessages = () => {
+    try {
+      const roomMessages = JSON.parse(localStorage.getItem(`debate_room_${roomId}_messages`) || '[]');
+      if (roomMessages.length > 0) {
+        setMessages(roomMessages);
+      }
+    } catch (error) {
+      console.error('Error loading room messages:', error);
+    }
+  };
+
   // Set up real-time connection
   const setupRealTimeConnection = () => {
     console.log(`Setting up real-time connection for room: ${roomId}`);
@@ -165,10 +329,12 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
         .on('presence', { event: 'join' }, ({ key, newPresences }) => {
           console.log('User joined:', key, newPresences);
           updateUsersPresence(newPresences);
+          checkForOpponent();
         })
         .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
           console.log('User left:', key, leftPresences);
           removeUserPresence(leftPresences);
+          checkForOpponent();
         })
         .on('presence', { event: 'sync' }, () => {
           console.log('Presence sync occurred');
@@ -293,164 +459,6 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
       });
     }
   }
-  
-  // Effect to handle delayed video offer processing
-  useEffect(() => {
-    if (videoOffer && stream) {
-      // Now that we have the stream, we can process the stored offer
-      handleReceivedOffer(videoOffer);
-      // Clear the stored offer after processing
-      setVideoOffer(null);
-    }
-  }, [videoOffer, stream]);
-  
-  // Check if there are active videos when the opponent connection changes
-  useEffect(() => {
-    if (opponentConnected && isCameraOn && stream) {
-      // If we're the host, initiate the connection
-      if (isRoomHost) {
-        initiatePeerConnection(stream);
-      }
-    }
-  }, [opponentConnected, isCameraOn]);
-  
-  // Update video element when stream changes
-  useEffect(() => {
-    if (myVideoRef.current && stream) {
-      myVideoRef.current.srcObject = stream;
-    }
-  }, [stream]);
-  
-  // Update remote video element when remoteStream changes
-  useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
-    }
-  }, [remoteStream]);
-  
-  // Check if there are opponents in the room
-  const checkForOpponent = () => {
-    // Filter users who aren't the current user and have selected a debate side (not observers or evaluators)
-    const opponents = users.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-    
-    // If there's at least one opponent, mark opponent as connected
-    setOpponentConnected(opponents.length > 0);
-  }
-
-  // Helper functions for user presence
-  const updateAllUsers = (presences: any[]) => {
-    console.log('Updating all users with presence data:', presences);
-    const allUsers = presences.map((presence: any) => ({
-      id: presence.id || presence.key,
-      name: presence.name || 'Guest',
-      side: presence.side,
-      isActive: presence.isActive || true,
-      lastSeen: presence.lastSeen || Date.now(),
-    }));
-    
-    // Replace the entire users list with the current presence state
-    setUsers(allUsers);
-    console.log('Updated users list:', allUsers);
-    
-    // Update opponent connection status
-    const opponents = allUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-    setOpponentConnected(opponents.length > 0);
-  }
-  
-  const updateUsersPresence = (presences: any[]) => {
-    console.log('Updating users presence with new data:', presences);
-    const newUsers = presences.map((presence: any) => ({
-      id: presence.id || presence.key,
-      name: presence.name || 'Guest',
-      side: presence.side,
-      isActive: presence.isActive || true,
-      lastSeen: presence.lastSeen || Date.now(),
-    }));
-    
-    setUsers(prevUsers => {
-      // Merge with existing users, updating any that already exist
-      const existingUserIds = prevUsers.map(u => u.id);
-      const newUsersToAdd = newUsers.filter(u => !existingUserIds.includes(u.id));
-      const updatedExistingUsers = prevUsers.map(existingUser => {
-        const matchingNewUser = newUsers.find(nu => nu.id === existingUser.id);
-        return matchingNewUser || existingUser;
-      });
-      
-      const updatedUsers = [...updatedExistingUsers, ...newUsersToAdd];
-      console.log('Updated users after presence update:', updatedUsers);
-      
-      // Update opponent connection status
-      const opponents = updatedUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-      setOpponentConnected(opponents.length > 0);
-      
-      return updatedUsers;
-    });
-  };
-
-  const removeUserPresence = (presences: any[]) => {
-    const userIdsToRemove = presences.map(p => p.id || p.key);
-    setUsers(prevUsers => {
-      const filteredUsers = prevUsers.filter(user => !userIdsToRemove.includes(user.id));
-      
-      // Update opponent connection status
-      const opponents = filteredUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-      setOpponentConnected(opponents.length > 0);
-      
-      return filteredUsers;
-    });
-  };
-
-  const updateUserSide = (userId: string, side: 'FOR' | 'AGAINST' | 'OBSERVER' | 'EVALUATOR') => {
-    setUsers(prevUsers => {
-      const updatedUsers = prevUsers.map(user => 
-        user.id === userId ? { ...user, side } : user
-      );
-      
-      // Update opponent connection status
-      const opponents = updatedUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-      setOpponentConnected(opponents.length > 0);
-      
-      return updatedUsers;
-    });
-  };
-
-  // Message handling
-  const addMessage = (message: DebateMessage) => {
-    setMessages(prev => {
-      // Prevent duplicate messages
-      if (prev.some(m => m.id === message.id)) {
-        return prev;
-      }
-      return [...prev, message];
-    });
-    
-    // Store messages in localStorage for persistence
-    const roomMessages = JSON.parse(localStorage.getItem(`debate_room_${roomId}_messages`) || '[]');
-    if (!roomMessages.some((m: DebateMessage) => m.id === message.id)) {
-      const updatedMessages = [...roomMessages, message];
-      localStorage.setItem(`debate_room_${roomId}_messages`, JSON.stringify(updatedMessages));
-    }
-    
-    scrollToBottom();
-  };
-  
-  const scrollToBottom = () => {
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  };
-  
-  // Load existing messages for this room from localStorage
-  const loadRoomMessages = () => {
-    try {
-      const roomMessages = JSON.parse(localStorage.getItem(`debate_room_${roomId}_messages`) || '[]');
-      if (roomMessages.length > 0) {
-        setMessages(roomMessages);
-      }
-    } catch (error) {
-      console.error('Error loading room messages:', error);
-    }
-  };
 
   const sendMessage = async () => {
     if (!currentMessage.trim() || !roomId || !isRoomActive || !mySide) {
@@ -504,7 +512,7 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
   };
 
   // Create a new room
-  const createRoom = async () => {
+  const createRoom = () => {
     setIsLoading(true);
     
     if (!topic.trim()) {
@@ -535,8 +543,6 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
       localStorage.setItem(`debate_room_${newRoomId}_host`, JSON.stringify({
         id: userId,
         name: userName,
-        topic: topic.trim(),
-        createdAt: Date.now()
       }));
       localStorage.setItem('current_debate_room_id', newRoomId);
       localStorage.setItem(`debate_room_${newRoomId}_messages`, JSON.stringify([]));
@@ -546,13 +552,9 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
       setIsRoomHost(true);
       
       toast({
-        title: "Room Created Successfully!",
-        description: `Room ID: ${newRoomId}. Share this with participants to join.`,
+        title: "Room Created!",
+        description: `Your debate room has been created with ID: ${newRoomId}`,
       });
-      
-      // Immediately set up the real-time connection as host
-      console.log('Setting up real-time connection as host for room:', newRoomId);
-      
     } catch (error) {
       console.error('Error creating room:', error);
       toast({
@@ -566,7 +568,7 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
   };
 
   // Join an existing room
-  const joinRoom = async () => {
+  const joinRoom = () => {
     setIsLoading(true);
     
     if (!joinRoomId.trim()) {
@@ -624,11 +626,11 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
             localStorage.setItem('current_debate_room_id', roomIdToJoin);
             
             toast({
-              title: "Joined Room Successfully",
-              description: `Welcome to the debate: "${payload.payload.topic}"`,
+              title: "Joined Room",
+              description: `You've joined the debate room: ${roomIdToJoin}`,
             });
             
-            // Clean up
+            // Unsubscribe from this temporary channel as we'll create a proper one when room is active
             roomChannel.unsubscribe();
             setIsLoading(false);
           }
@@ -648,11 +650,6 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
               console.log('Found room data in localStorage');
               const room: DebateRoom = JSON.parse(roomData);
               
-              // Clear the timeout since we found the room
-              if (joinTimeout) {
-                clearTimeout(joinTimeout);
-              }
-              
               // Set room properties
               setRoomId(roomIdToJoin);
               setTopic(room.topic);
@@ -662,30 +659,30 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
               localStorage.setItem('current_debate_room_id', roomIdToJoin);
               
               toast({
-                title: "Joined Room Successfully",
-                description: `Welcome to the debate: "${room.topic}"`,
+                title: "Joined Room",
+                description: `You've joined the debate room: ${roomIdToJoin}`,
               });
               
-              // Unsubscribe from this temporary channel as we'll create a proper one when room is active
               roomChannel.unsubscribe();
               setIsLoading(false);
+              return;
             }
+            
+            // Set a timeout to check if we received room info
+            joinTimeout = setTimeout(() => {
+              if (!isRoomActive) {
+                console.log('Timed out waiting for room info');
+                roomChannel.unsubscribe();
+                toast({
+                  title: "Room Not Found",
+                  description: "The room ID you entered does not exist or is no longer active",
+                  variant: "destructive",
+                });
+                setIsLoading(false);
+              }
+            }, 3000);
           }
         });
-      
-      // Set a timeout to handle case where no room info is received
-      joinTimeout = setTimeout(() => {
-        console.log('Timed out waiting for room info');
-        roomChannel.unsubscribe();
-        
-        toast({
-          title: "Room Not Found",
-          description: "Could not find the room. Please check the room ID and try again.",
-          variant: "destructive",
-        });
-        
-        setIsLoading(false);
-      }, 5000); // Wait 5 seconds for room info
       
     } catch (error) {
       console.error('Error joining room:', error);
@@ -695,94 +692,6 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
         variant: "destructive",
       });
       setIsLoading(false);
-    }
-  };
-
-  // Handle copy room ID
-  const copyRoomId = () => {
-    navigator.clipboard.writeText(roomId);
-    toast({
-      title: "Copied!",
-      description: "Room ID copied to clipboard",
-    });
-  };
-
-  // Speech recognition for debate messages
-  const initSpeechRecognition = () => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      // @ts-ignore
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-      
-      recognition.onresult = (event: any) => {
-        const transcript = Array.from(event.results)
-          .map((result: any) => result[0])
-          .map((result: any) => result.transcript)
-          .join('');
-        
-        setCurrentMessage(transcript);
-      };
-      
-      recognition.onerror = (event: any) => {
-        console.error('Speech recognition error', event);
-        setIsRecording(false);
-      };
-      
-      recognition.onend = () => {
-        setIsRecording(false);
-      };
-      
-      return recognition;
-    }
-    return null;
-  };
-
-  const toggleSpeechRecognition = () => {
-    // Prevent observers and evaluators from using speech recognition
-    if (mySide === 'OBSERVER') {
-      toast({
-        title: "Speech Recognition Disabled",
-        description: "Observers cannot use speech recognition. Switch to FOR or AGAINST to participate.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (mySide === 'EVALUATOR') {
-      toast({
-        title: "Speech Recognition Disabled",
-        description: "Evaluators cannot use speech recognition. Switch to FOR or AGAINST to participate.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!recognitionRef.current) {
-      recognitionRef.current = initSpeechRecognition();
-    }
-
-    if (!recognitionRef.current) {
-      toast({
-        title: "Speech Recognition Not Available",
-        description: "Your browser doesn't support speech recognition.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (isRecording) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
-    } else {
-      recognitionRef.current.start();
-      setIsRecording(true);
-      toast({
-        title: "Recording Started",
-        description: "Speak clearly to record your argument.",
-      });
     }
   };
 
@@ -809,18 +718,12 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
         payload: { userId, side, userName },
       });
       
-      // Update local users list immediately
-      setUsers(prevUsers => {
-        const updatedUsers = prevUsers.map(user => 
+      // Update local users list
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
           user.id === userId ? { ...user, side } : user
-        );
-        
-        // Update opponent connection status
-        const opponents = updatedUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-        setOpponentConnected(opponents.length > 0);
-        
-        return updatedUsers;
-      });
+        )
+      );
       
       const sideText = side === 'OBSERVER' ? 'as an observer' : 
                        side === 'EVALUATOR' ? 'as an evaluator' : 
@@ -839,165 +742,6 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
     }
   };
 
-  // Force role selection to be visible for testing
-  const forceShowRoleSelection = () => {
-    setMySide(null);
-    toast({
-      title: "Role Reset",
-      description: "Please select your role again",
-    });
-  };
-  
-  // Force refresh participants list
-  const refreshParticipants = () => {
-    console.log('Manual refresh triggered');
-    if (roomChannelRef.current) {
-      const state = roomChannelRef.current.presenceState();
-      const allUsers = Object.values(state).flat() as any[];
-      console.log('Manual participants refresh:', allUsers);
-      updateAllUsers(allUsers);
-      
-      toast({
-        title: "Participants Refreshed",
-        description: `${allUsers.length} participants in room`,
-      });
-    } else {
-      toast({
-        title: "Not Connected",
-        description: "No active room connection to refresh",
-        variant: "destructive",
-      });
-    }
-  };
-  
-  // End the debate
-  const endDebate = async () => {
-    try {
-      await roomChannelRef.current.send({
-        type: 'broadcast',
-        event: 'end-debate',
-        payload: { userId, roomId },
-      });
-      
-      handleDebateEnd();
-    } catch (error) {
-      console.error('Error ending debate:', error);
-      toast({
-        title: "Error",
-        description: "Failed to end debate. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-  
-  const handleDebateEnd = () => {
-    setDebateEnded(true);
-    
-    // Save the completed debate with proper end timestamp and convert message format
-    if (roomId) {
-      try {
-        const roomData = JSON.parse(localStorage.getItem(`debate_room_${roomId}`) || '{}');
-        const roomMessages = JSON.parse(localStorage.getItem(`debate_room_${roomId}_messages`) || '[]');
-        
-        // Convert DebateMessage format to ChatMessage format for history compatibility
-        const convertedMessages = roomMessages.map((msg: DebateMessage) => ({
-          id: msg.id,
-          senderId: msg.sender,
-          senderName: msg.senderName,
-          text: msg.message,
-          side: msg.side,
-          timestamp: new Date(msg.timestamp).toISOString()
-        }));
-        
-        // Get participants from current users
-        const participants = users.map(user => ({
-          id: user.id,
-          name: user.name,
-          side: user.side,
-          isActive: false, // Mark all as inactive since debate ended
-          joinedAt: new Date(roomData.createdAt || Date.now()).toISOString(),
-          leftAt: new Date().toISOString(),
-          lastSeen: new Date().toISOString()
-        }));
-        
-        const endedAt = new Date().toISOString();
-        
-        const completedDebateRecord = {
-          id: roomId,
-          roomId: roomId,
-          topic: topic || roomData.topic,
-          hostName: userName,
-          participants: participants,
-          messages: convertedMessages,
-          createdAt: new Date(roomData.createdAt || Date.now()).toISOString(),
-          endedAt: endedAt,
-          status: 'completed' as const,
-          winner: undefined, // Could be determined based on logic
-          moderatorNotes: undefined,
-          tags: ['human-vs-human']
-        };
-        
-        // Update the main room data
-        const updatedRoomData = {
-          ...roomData,
-          status: 'completed',
-          endedAt: endedAt,
-          participants: participants,
-          messages: convertedMessages
-        };
-        
-        // Save to multiple storage systems for compatibility
-        localStorage.setItem(`debate_room_${roomId}`, JSON.stringify(updatedRoomData));
-        
-        // Save to temporary debate history service
-        try {
-          const { TemporaryDebateHistoryService } = require('@/services/temporaryDebateHistoryService');
-          TemporaryDebateHistoryService.initialize();
-          TemporaryDebateHistoryService.saveDebate(completedDebateRecord);
-          console.log('✅ Debate saved to temporary history service');
-        } catch (tempError) {
-          console.warn('Failed to save to temporary service:', tempError);
-        }
-        
-        // Also save to enhanced service for backup
-        try {
-          const { EnhancedDebateHistoryService } = require('@/services/enhancedDebateHistoryService');
-          EnhancedDebateHistoryService.saveDebate(completedDebateRecord);
-          console.log('✅ Debate saved to enhanced history service');
-        } catch (enhancedError) {
-          console.warn('Failed to save to enhanced service:', enhancedError);
-        }
-        
-        toast({
-          title: "Debate Ended",
-          description: "The debate has been completed and saved to history.",
-        });
-      } catch (error) {
-        console.error('Error saving debate completion:', error);
-        toast({
-          title: "Debate Ended",
-          description: "The debate has been completed.",
-        });
-      }
-    } else {
-      toast({
-        title: "Debate Ended",
-        description: "The debate has been completed.",
-      });
-    }
-  };
-  
-  // Clean up room data
-  const cleanupRoom = () => {
-    // Original cleanup logic
-    localStorage.removeItem('current_debate_room_id');
-    localStorage.removeItem('debate_room_data_' + roomId);
-    
-    // Also clean up video resources
-    cleanupVideo();
-  };
-  
-  // Function to handle toggling the camera
   // Toggle camera on/off
   const toggleCamera = async () => {
     if (isCameraOn) {
@@ -1271,6 +1015,202 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
     setRemoteStream(null);
   };
 
+  // End the debate
+  const endDebate = async () => {
+    try {
+      await roomChannelRef.current.send({
+        type: 'broadcast',
+        event: 'end-debate',
+        payload: { userId, roomId },
+      });
+      
+      handleDebateEnd();
+    } catch (error) {
+      console.error('Error ending debate:', error);
+      toast({
+        title: "Error",
+        description: "Failed to end debate. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleDebateEnd = () => {
+    setDebateEnded(true);
+    
+    // Save the completed debate with proper end timestamp and convert message format
+    if (roomId) {
+      try {
+        const roomData = JSON.parse(localStorage.getItem(`debate_room_${roomId}`) || '{}');
+        const roomMessages = JSON.parse(localStorage.getItem(`debate_room_${roomId}_messages`) || '[]');
+        
+        // Convert DebateMessage format to ChatMessage format for history compatibility
+        const convertedMessages = roomMessages.map((msg: DebateMessage) => ({
+          id: msg.id,
+          senderId: msg.sender,
+          senderName: msg.senderName,
+          text: msg.message,
+          side: msg.side,
+          timestamp: new Date(msg.timestamp).toISOString()
+        }));
+        
+        // Get participants from current users
+        const participants = users.map(user => ({
+          id: user.id,
+          name: user.name,
+          side: user.side,
+          isActive: false, // Mark all as inactive since debate ended
+          joinedAt: new Date(roomData.createdAt || Date.now()).toISOString(),
+          leftAt: new Date().toISOString(),
+          lastSeen: new Date().toISOString()
+        }));
+        
+        const endedAt = new Date().toISOString();
+        
+        const completedDebateRecord = {
+          id: roomId,
+          roomId: roomId,
+          topic: topic || roomData.topic,
+          hostName: userName,
+          participants: participants,
+          messages: convertedMessages,
+          createdAt: new Date(roomData.createdAt || Date.now()).toISOString(),
+          endedAt: endedAt,
+          status: 'completed' as const,
+          winner: undefined, // Could be determined based on logic
+          moderatorNotes: undefined,
+          tags: ['human-vs-human']
+        };
+        
+        // Update the main room data
+        const updatedRoomData = {
+          ...roomData,
+          status: 'completed',
+          endedAt: endedAt,
+          participants: participants,
+          messages: convertedMessages
+        };
+        
+        // Save to localStorage
+        localStorage.setItem(`debate_room_${roomId}`, JSON.stringify(updatedRoomData));
+        
+        toast({
+          title: "Debate Ended",
+          description: "The debate has been completed and saved to history.",
+        });
+      } catch (error) {
+        console.error('Error saving debate completion:', error);
+        toast({
+          title: "Debate Ended",
+          description: "The debate has been completed.",
+        });
+      }
+    } else {
+      toast({
+        title: "Debate Ended",
+        description: "The debate has been completed.",
+      });
+    }
+  };
+
+  // Clean up room data
+  const cleanupRoom = () => {
+    // Original cleanup logic
+    localStorage.removeItem('current_debate_room_id');
+    localStorage.removeItem('debate_room_data_' + roomId);
+    
+    // Also clean up video resources
+    cleanupVideo();
+  };
+
+  // Handle copy room ID
+  const copyRoomId = () => {
+    navigator.clipboard.writeText(roomId);
+    toast({
+      title: "Copied!",
+      description: "Room ID copied to clipboard",
+    });
+  };
+
+  // Speech recognition for debate messages
+  const initSpeechRecognition = () => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      // @ts-ignore
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+      
+      recognition.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => result[0])
+          .map((result: any) => result.transcript)
+          .join('');
+        
+        setCurrentMessage(transcript);
+      };
+      
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error', event);
+        setIsRecording(false);
+      };
+      
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+      
+      return recognition;
+    }
+    return null;
+  };
+
+  const toggleSpeechRecognition = () => {
+    // Prevent observers and evaluators from using speech recognition
+    if (mySide === 'OBSERVER') {
+      toast({
+        title: "Speech Recognition Disabled",
+        description: "Observers cannot use speech recognition. Switch to FOR or AGAINST to participate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (mySide === 'EVALUATOR') {
+      toast({
+        title: "Speech Recognition Disabled",
+        description: "Evaluators cannot use speech recognition. Switch to FOR or AGAINST to participate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!recognitionRef.current) {
+      recognitionRef.current = initSpeechRecognition();
+    }
+
+    if (!recognitionRef.current) {
+      toast({
+        title: "Speech Recognition Not Available",
+        description: "Your browser doesn't support speech recognition.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      recognitionRef.current.start();
+      setIsRecording(true);
+      toast({
+        title: "Recording Started",
+        description: "Speak clearly to record your argument.",
+      });
+    }
+  };
+
   const leaveRoom = () => {
     // Unsubscribe from real-time channels
     if (roomChannelRef.current) {
@@ -1285,175 +1225,106 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
       cleanupRoom();
     }
     
-    // Navigate back
+    // Clean up common room data
+    localStorage.removeItem('current_debate_room_id');
+    
     onBack();
   };
 
   // Room creation/join UI
   if (!isRoomActive) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl shadow-2xl border-0">
-          <CardHeader className="text-center pb-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
-            <CardTitle className="text-3xl font-bold mb-2">🎯 Human vs Human Debate</CardTitle>
-            <p className="text-blue-100 text-lg">Engage in real-time debates with other participants</p>
-          </CardHeader>
-          
-          <CardContent className="p-8">
-            {/* Navigation */}
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex space-x-3">
-                {onViewHistory && (
-                  <Button variant="outline" onClick={onViewHistory} size="sm" className="flex items-center gap-2">
-                    📚 View History
-                  </Button>
-                )}
-                <Button variant="outline" onClick={onBack} size="sm" className="flex items-center gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </Button>
-              </div>
-            </div>
+      <div className="max-w-md mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Human vs Human Debate Room</h2>
+          <div className="flex space-x-2">
+            {onViewHistory && (
+              <Button variant="outline" onClick={onViewHistory} size="sm">
+                📚 History
+              </Button>
+            )}
+            <Button variant="outline" onClick={onBack}>Back</Button>
+          </div>
+        </div>
 
-            {/* Create/Join Toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-1 mb-8">
-              <Button 
-                variant={isCreatingRoom ? "default" : "ghost"} 
-                onClick={() => setIsCreatingRoom(true)}
-                className="flex-1 rounded-md"
-              >
-                🏗️ Create Room
-              </Button>
-              <Button 
-                variant={!isCreatingRoom ? "default" : "ghost"} 
-                onClick={() => setIsCreatingRoom(false)}
-                className="flex-1 rounded-md"
-              >
-                🚪 Join Room
-              </Button>
-            </div>
-            
-            <div className="space-y-6">
-              {/* User Name */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Your Display Name</label>
+        <div className="flex space-x-4 mb-8">
+          <Button 
+            variant={isCreatingRoom ? "default" : "outline"} 
+            onClick={() => setIsCreatingRoom(true)}
+            className="flex-1"
+          >
+            Create Room
+          </Button>
+          <Button 
+            variant={!isCreatingRoom ? "default" : "outline"} 
+            onClick={() => setIsCreatingRoom(false)}
+            className="flex-1"
+          >
+            Join Room
+          </Button>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-1 block">Your Name</label>
+            <Input 
+              value={userName} 
+              onChange={(e) => setUserName(e.target.value)} 
+              placeholder="Enter your name" 
+            />
+          </div>
+
+          {isCreatingRoom ? (
+            <>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Room ID (Share with opponent)</label>
+                <div className="flex">
+                  <Input value={roomId} disabled className="flex-1" />
+                  <Button variant="outline" className="ml-2" onClick={() => setRoomId(generateRoomId())} title="Generate new room ID">
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Debate Topic</label>
                 <Input 
-                  value={userName} 
-                  onChange={(e) => setUserName(e.target.value)} 
-                  placeholder="Enter your name (e.g., John Doe)" 
-                  className="h-12 text-lg"
+                  value={topic} 
+                  onChange={(e) => setTopic(e.target.value)} 
+                  placeholder="Enter debate topic" 
                 />
               </div>
-
-              {isCreatingRoom ? (
-                <div className="space-y-6">
-                  {/* Room ID */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Room ID (Share with participants)</label>
-                    <div className="flex gap-3">
-                      <Input value={roomId} disabled className="flex-1 h-12 text-lg font-mono tracking-wider" />
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setRoomId(generateRoomId())} 
-                        title="Generate new room ID"
-                        className="px-4"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => {
-                          navigator.clipboard.writeText(roomId);
-                          toast({ title: "Room ID copied to clipboard!" });
-                        }}
-                        title="Copy room ID"
-                        className="px-4"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {/* Debate Topic */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Debate Topic</label>
-                    <Textarea 
-                      value={topic} 
-                      onChange={(e) => setTopic(e.target.value)} 
-                      placeholder="Enter a clear debate topic (e.g., Should AI replace human teachers in education?)" 
-                      className="min-h-[100px] text-lg"
-                    />
-                  </div>
-                  
-                  {/* Create Button */}
-                  <Button 
-                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" 
-                    onClick={createRoom} 
-                    disabled={isLoading || !userName.trim() || !topic.trim()}
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                        Creating Room...
-                      </>
-                    ) : (
-                      <>
-                        🚀 Create Debate Room
-                      </>
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Join Room ID */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Enter Room ID</label>
-                    <Input 
-                      value={joinRoomId} 
-                      onChange={(e) => setJoinRoomId(e.target.value.toUpperCase())} 
-                      placeholder="Enter 6-character room ID (e.g., ABC123)" 
-                      maxLength={6}
-                      className="h-12 text-lg font-mono tracking-wider text-center"
-                    />
-                  </div>
-                  
-                  {/* Join Button */}
-                  <Button 
-                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700" 
-                    onClick={joinRoom}
-                    disabled={isLoading || !userName.trim() || joinRoomId.length !== 6}
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                        Joining Room...
-                      </>
-                    ) : (
-                      <>
-                        🎯 Join Debate Room
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
-            
-            {/* Help Section */}
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h4 className="font-semibold text-blue-800 mb-2">How it works:</h4>
-              <ul className="text-sm text-blue-700 space-y-1">
-                <li>• <strong>Create Room:</strong> Set up a debate topic and share the room ID</li>
-                <li>• <strong>Join Room:</strong> Enter a room ID to participate in existing debates</li>
-                <li>• <strong>Choose Role:</strong> Select FOR, AGAINST, OBSERVER, or EVALUATOR</li>
-                <li>• <strong>Real-time:</strong> Chat and video with other participants</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+              <Button 
+                className="w-full" 
+                onClick={createRoom} 
+                disabled={isLoading}
+              >
+                {isLoading ? "Creating..." : "Create Debate Room"}
+              </Button>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Enter Room ID</label>
+                <Input 
+                  value={joinRoomId} 
+                  onChange={(e) => setJoinRoomId(e.target.value.toUpperCase())} 
+                  placeholder="Enter 6-character room ID" 
+                  maxLength={6}
+                />
+              </div>
+              <Button 
+                className="w-full" 
+                onClick={joinRoom}
+                disabled={isLoading}
+              >
+                {isLoading ? "Joining..." : "Join Debate Room"}
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     );
   }
-  // End of Room creation/join UI block
 
   // Active debate room UI
   return (
@@ -1523,7 +1394,26 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
               variant="outline" 
               size="sm"
               title="Refresh Participants"
-              onClick={refreshParticipants}
+              onClick={() => {
+                if (roomChannelRef.current) {
+                  // Re-track our own presence
+                  roomChannelRef.current.track({
+                    id: userId,
+                    name: userName,
+                    side: mySide,
+                    isActive: true,
+                    lastSeen: Date.now(),
+                  });
+                  
+                  // Force sync presence
+                  setTimeout(() => {
+                    const state = roomChannelRef.current.presenceState();
+                    console.log('Current presence state:', state);
+                    const allUsers = Object.values(state).flat() as any[];
+                    updateAllUsers(allUsers);
+                  }, 500);
+                }
+              }}
               className="hidden sm:flex"
             >
               <RefreshCw className="h-4 w-4" />
@@ -1534,7 +1424,7 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
                 End Debate
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={forceShowRoleSelection} className="hidden md:flex">
+            <Button variant="outline" size="sm" onClick={() => setMySide(null)} className="hidden md:flex">
               Reset Role
             </Button>
             <Button variant="outline" size="sm" onClick={leaveRoom}>
@@ -1549,324 +1439,256 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
         {/* Participants sidebar - responsive */}
         <div className="lg:w-80 lg:border-r bg-white border-b lg:border-b-0 flex-shrink-0">
           <div className="h-full overflow-y-auto p-3 max-h-64 lg:max-h-none">
-            {/* Debug info for role selection */}
-            <div className="text-xs text-gray-500 mb-2 p-2 bg-gray-50 rounded">
-            <p>mySide: {mySide || 'null'}</p>
-            <p>debateEnded: {debateEnded ? 'true' : 'false'}</p>
-            <p>Should show role selection: {(!mySide && !debateEnded) ? 'YES' : 'NO'}</p>
-          </div>
-          
-          {/* Role Selection - Show prominently if no role selected */}
-          {!mySide && !debateEnded && (
-            <Card className="mb-4 border-2 border-yellow-400 bg-yellow-50 shadow-lg">
-              <CardContent className="p-4">
-                <h4 className="font-bold mb-3 text-yellow-800 text-center">🎭 Choose Your Role</h4>
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-green-50 hover:bg-green-100 border-green-300 text-green-700 font-medium py-3"
-                    onClick={() => selectSide('FOR')}
-                  >
-                    <div className="text-center">
-                      <div className="text-lg">✅</div>
-                      <div className="text-xs">FOR</div>
-                    </div>
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-red-50 hover:bg-red-100 border-red-300 text-red-700 font-medium py-3"
-                    onClick={() => selectSide('AGAINST')}
-                  >
-                    <div className="text-center">
-                      <div className="text-lg">❌</div>
-                      <div className="text-xs">AGAINST</div>
-                    </div>
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-blue-50 hover:bg-blue-100 border-blue-300 text-blue-700 font-medium py-3"
-                    onClick={() => selectSide('OBSERVER')}
-                  >
-                    <div className="text-center">
-                      <div className="text-lg">👁️</div>
-                      <div className="text-xs">Observer</div>
-                    </div>
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-purple-50 hover:bg-purple-100 border-purple-300 text-purple-700 font-medium py-3"
-                    onClick={() => selectSide('EVALUATOR')}
-                  >
-                    <div className="text-center">
-                      <div className="text-lg">⚖️</div>
-                      <div className="text-xs">Evaluator</div>
-                    </div>
-                  </Button>
-                </div>
-                <p className="text-xs text-yellow-600 mt-3 text-center">
-                  Choose how you want to participate in this debate
-                </p>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Current Role Display and Change Option */}
-          {mySide && !debateEnded && (
-            <Card className="mb-4 border border-gray-200">
-              <CardContent className="p-3">
-                <h4 className="font-medium mb-2">Your Current Role</h4>
-                <div className="flex items-center justify-between">
-                  <Badge 
-                    variant="outline" 
-                    className={
-                      mySide === 'FOR' 
-                        ? 'bg-green-100 text-green-800' 
-                        : mySide === 'AGAINST' 
-                        ? 'bg-red-100 text-red-800'
-                        : mySide === 'OBSERVER'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-purple-100 text-purple-800'
-                    }
-                  >
-                    {mySide === 'FOR' && '✅ FOR'}
-                    {mySide === 'AGAINST' && '❌ AGAINST'}  
-                    {mySide === 'OBSERVER' && '👁️ Observer'}
-                    {mySide === 'EVALUATOR' && '⚖️ Evaluator'}
-                  </Badge>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="text-xs"
-                    onClick={() => setMySide(null)}
-                  >
-                    Change
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          
-          <div className="flex justify-between items-center mb-2">
+            {/* Role Selection - Show prominently if no role selected */}
+            {!mySide && !debateEnded && (
+              <Card className="mb-4 border-2 border-yellow-400 bg-yellow-50 shadow-lg">
+                <CardContent className="p-4">
+                  <h4 className="font-bold mb-3 text-yellow-800 text-center">🎭 Choose Your Role</h4>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="bg-green-50 hover:bg-green-100 border-green-300 text-green-700 font-medium py-3"
+                      onClick={() => selectSide('FOR')}
+                    >
+                      <div className="text-center">
+                        <div className="text-lg">✅</div>
+                        <div className="text-xs">FOR</div>
+                      </div>
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="bg-red-50 hover:bg-red-100 border-red-300 text-red-700 font-medium py-3"
+                      onClick={() => selectSide('AGAINST')}
+                    >
+                      <div className="text-center">
+                        <div className="text-lg">❌</div>
+                        <div className="text-xs">AGAINST</div>
+                      </div>
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="bg-blue-50 hover:bg-blue-100 border-blue-300 text-blue-700 font-medium py-3"
+                      onClick={() => selectSide('OBSERVER')}
+                    >
+                      <div className="text-center">
+                        <div className="text-lg">👁️</div>
+                        <div className="text-xs">Observer</div>
+                      </div>
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="bg-purple-50 hover:bg-purple-100 border-purple-300 text-purple-700 font-medium py-3"
+                      onClick={() => selectSide('EVALUATOR')}
+                    >
+                      <div className="text-center">
+                        <div className="text-lg">⚖️</div>
+                        <div className="text-xs">Evaluator</div>
+                      </div>
+                    </Button>
+                  </div>
+                  <p className="text-xs text-yellow-600 mt-3 text-center">
+                    Choose how you want to participate in this debate
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Current Role Display and Change Option */}
+            {mySide && !debateEnded && (
+              <Card className="mb-4 border border-gray-200">
+                <CardContent className="p-3">
+                  <h4 className="font-medium mb-2">Your Current Role</h4>
+                  <div className="flex items-center justify-between">
+                    <Badge 
+                      variant="outline" 
+                      className={
+                        mySide === 'FOR' 
+                          ? 'bg-green-100 text-green-800' 
+                          : mySide === 'AGAINST' 
+                          ? 'bg-red-100 text-red-800'
+                          : mySide === 'OBSERVER'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-purple-100 text-purple-800'
+                      }
+                    >
+                      {mySide === 'FOR' && '✅ FOR'}
+                      {mySide === 'AGAINST' && '❌ AGAINST'}  
+                      {mySide === 'OBSERVER' && '👁️ Observer'}
+                      {mySide === 'EVALUATOR' && '⚖️ Evaluator'}
+                    </Badge>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="text-xs"
+                      onClick={() => setMySide(null)}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            <div className="flex justify-between items-center mb-2">
               <h3 className="font-semibold flex items-center">
                 <Users className="h-4 w-4 mr-2" /> Participants
               </h3>
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={refreshParticipants}
-                title="Refresh Participants"
+                onClick={() => {
+                  // Refresh presence data
+                  if (roomChannelRef.current) {
+                    const state = roomChannelRef.current.presenceState();
+                    const allUsers = Object.values(state).flat() as any[];
+                    updateAllUsers(allUsers);
+                    toast({
+                      title: "Refreshed",
+                      description: `${allUsers.length} users in room`,
+                    });
+                  }
+                }}
               >
                 Refresh
               </Button>
             </div>
-          </div>
-          
-          <div className="space-y-3">
-            {/* Room Info Summary */}
-            <Card className="bg-gray-50">
-              <CardContent className="p-3">
-                <div className="text-xs space-y-1">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Room:</span>
-                    <span className="font-mono">{roomId}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Topic:</span>
-                    <span className="text-right ml-2 flex-1 break-words">
-                      {topic || 'Loading...'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Total Users:</span>
-                    <span>{users.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Your Role:</span>
-                    <span className={`font-medium ${
-                      mySide === 'FOR' ? 'text-green-600' :
-                      mySide === 'AGAINST' ? 'text-red-600' :
-                      mySide === 'OBSERVER' ? 'text-blue-600' :
-                      mySide === 'EVALUATOR' ? 'text-purple-600' :
-                      'text-gray-500'
-                    }`}>
-                      {mySide || 'Not Selected'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-600 mt-2 pt-1 border-t">
-                    <span>🥊 {users.filter(u => u.side === 'FOR' || u.side === 'AGAINST').length}</span>
-                    <span>👁️ {users.filter(u => u.side === 'OBSERVER').length}</span>
-                    <span>⚖️ {users.filter(u => u.side === 'EVALUATOR').length}</span>
-                    <span className={opponentConnected ? 'text-green-600' : 'text-orange-600'}>
-                      {opponentConnected ? '🔗 Connected' : '⏳ Waiting'}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
             
-            {/* Debaters Section */}
-            <div className="space-y-2">
-              <h4 className="font-semibold text-sm text-gray-700 flex items-center">
-                🥊 Active Debaters
-              </h4>
+            <div className="space-y-3">
+              {/* Room Info Summary */}
+              <Card className="bg-gray-50">
+                <CardContent className="p-3">
+                  <div className="text-xs space-y-1">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Room:</span>
+                      <span className="font-mono">{roomId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Total Users:</span>
+                      <span>{users.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Your Role:</span>
+                      <span className={`font-medium ${
+                        mySide === 'FOR' ? 'text-green-600' :
+                        mySide === 'AGAINST' ? 'text-red-600' :
+                        mySide === 'OBSERVER' ? 'text-blue-600' :
+                        mySide === 'EVALUATOR' ? 'text-purple-600' :
+                        'text-gray-500'
+                      }`}>
+                        {mySide || 'Not Selected'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-600 mt-2 pt-1 border-t">
+                      <span>🥊 {users.filter(u => u.side === 'FOR' || u.side === 'AGAINST').length}</span>
+                      <span>👁️ {users.filter(u => u.side === 'OBSERVER').length}</span>
+                      <span>⚖️ {users.filter(u => u.side === 'EVALUATOR').length}</span>
+                      <span className={opponentConnected ? 'text-green-600' : 'text-orange-600'}>
+                        {opponentConnected ? '🔗 Connected' : '⏳ Waiting'}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               
-              <div className="grid grid-cols-2 gap-2">
-                {/* FOR Side */}
-                <Card className="bg-green-50 border-green-200">
-                  <CardContent className="p-2">
-                    <h5 className="font-medium text-xs text-green-700 mb-2 text-center">FOR</h5>
-                    <div className="space-y-1">
-                      {users.filter(u => u.side === 'FOR').map(user => (
-                        <div key={user.id} className="flex items-center space-x-1">
-                          <Avatar className="h-4 w-4">
-                            <AvatarFallback className="text-xs bg-green-100 text-green-700">
-                              {user.name?.substring(0, 2) || '??'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs truncate">{user.name}</span>
-                          {user.id === userId && <span className="text-xs text-green-600">•</span>}
-                        </div>
-                      ))}
-                      {users.filter(u => u.side === 'FOR').length === 0 && (
-                        <p className="text-xs text-gray-500 text-center">Empty</p>
-                      )}
-                    </div>
-                    {(!mySide || mySide !== 'FOR') && !debateEnded && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="w-full mt-2 h-6 text-xs bg-green-100 hover:bg-green-200 border-green-300 text-green-700"
-                        onClick={() => selectSide('FOR')}
-                      >
-                        Join
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* AGAINST Side */}
-                <Card className="bg-red-50 border-red-200">
-                  <CardContent className="p-2">
-                    <h5 className="font-medium text-xs text-red-700 mb-2 text-center">AGAINST</h5>
-                    <div className="space-y-1">
-                      {users.filter(u => u.side === 'AGAINST').map(user => (
-                        <div key={user.id} className="flex items-center space-x-1">
-                          <Avatar className="h-4 w-4">
-                            <AvatarFallback className="text-xs bg-red-100 text-red-700">
-                              {user.name?.substring(0, 2) || '??'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs truncate">{user.name}</span>
-                          {user.id === userId && <span className="text-xs text-red-600">•</span>}
-                        </div>
-                      ))}
-                      {users.filter(u => u.side === 'AGAINST').length === 0 && (
-                        <p className="text-xs text-gray-500 text-center">Empty</p>
-                      )}
-                    </div>
-                    {(!mySide || mySide !== 'AGAINST') && !debateEnded && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="w-full mt-2 h-6 text-xs bg-red-100 hover:bg-red-200 border-red-300 text-red-700"
-                        onClick={() => selectSide('AGAINST')}
-                      >
-                        Join
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-
-            {/* Observers & Evaluators Section */}
-            <div className="space-y-2">
-              <h4 className="font-semibold text-sm text-gray-700 flex items-center">
-                👥 Audience & Judges
-              </h4>
-              
-              <div className="grid grid-cols-2 gap-2">
-                {/* Observers */}
-                <Card className="bg-blue-50 border-blue-200">
-                  <CardContent className="p-2">
-                    <h5 className="font-medium text-xs text-blue-700 mb-2 text-center flex items-center justify-center">
-                      <Eye className="h-3 w-3 mr-1" />
-                      Observers
-                    </h5>
-                    <div className="space-y-1">
-                      {users.filter(u => u.side === 'OBSERVER').map(user => (
-                        <div key={user.id} className="flex items-center space-x-1">
-                          <Avatar className="h-4 w-4">
-                            <AvatarFallback className="text-xs bg-blue-100 text-blue-700">
-                              {user.name?.substring(0, 2) || '??'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs truncate">{user.name}</span>
-                          {user.id === userId && <span className="text-xs text-blue-600">•</span>}
-                        </div>
-                      ))}
-                      {users.filter(u => u.side === 'OBSERVER').length === 0 && (
-                        <p className="text-xs text-gray-500 text-center">None</p>
-                      )}
-                    </div>
-                    {!mySide && !debateEnded && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="w-full mt-2 h-6 text-xs bg-blue-100 hover:bg-blue-200 border-blue-300 text-blue-700"
-                        onClick={() => selectSide('OBSERVER')}
-                      >
+              {/* Active Participants Lists */}
+              <div className="space-y-2">
+                {users.filter(u => u.side === 'FOR').length > 0 && (
+                  <Card className="bg-green-50 border-green-200">
+                    <CardContent className="p-2">
+                      <h5 className="font-medium text-xs text-green-700 mb-2">✅ FOR</h5>
+                      <div className="space-y-1">
+                        {users.filter(u => u.side === 'FOR').map(user => (
+                          <div key={user.id} className="flex items-center space-x-1">
+                            <Avatar className="h-4 w-4">
+                              <AvatarFallback className="text-xs bg-green-100 text-green-700">
+                                {user.name?.substring(0, 2) || '??'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs truncate">{user.name}</span>
+                            {user.id === userId && <span className="text-xs text-green-600">•</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {users.filter(u => u.side === 'AGAINST').length > 0 && (
+                  <Card className="bg-red-50 border-red-200">
+                    <CardContent className="p-2">
+                      <h5 className="font-medium text-xs text-red-700 mb-2">❌ AGAINST</h5>
+                      <div className="space-y-1">
+                        {users.filter(u => u.side === 'AGAINST').map(user => (
+                          <div key={user.id} className="flex items-center space-x-1">
+                            <Avatar className="h-4 w-4">
+                              <AvatarFallback className="text-xs bg-red-100 text-red-700">
+                                {user.name?.substring(0, 2) || '??'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs truncate">{user.name}</span>
+                            {user.id === userId && <span className="text-xs text-red-600">•</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {users.filter(u => u.side === 'OBSERVER').length > 0 && (
+                  <Card className="bg-blue-50 border-blue-200">
+                    <CardContent className="p-2">
+                      <h5 className="font-medium text-xs text-blue-700 mb-2 flex items-center">
                         <Eye className="h-3 w-3 mr-1" />
-                        Watch
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Evaluators */}
-                <Card className="bg-purple-50 border-purple-200">
-                  <CardContent className="p-2">
-                    <h5 className="font-medium text-xs text-purple-700 mb-2 text-center">
-                      ⚖️ Evaluators
-                    </h5>
-                    <div className="space-y-1">
-                      {users.filter(u => u.side === 'EVALUATOR').map(user => (
-                        <div key={user.id} className="flex items-center space-x-1">
-                          <Avatar className="h-4 w-4">
-                            <AvatarFallback className="text-xs bg-purple-100 text-purple-700">
-                              {user.name?.substring(0, 2) || '??'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs truncate">{user.name}</span>
-                          {user.id === userId && <span className="text-xs text-purple-600">•</span>}
-                        </div>
-                      ))}
-                      {users.filter(u => u.side === 'EVALUATOR').length === 0 && (
-                        <p className="text-xs text-gray-500 text-center">None</p>
-                      )}
-                    </div>
-                    {!mySide && !debateEnded && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="w-full mt-2 h-6 text-xs bg-purple-100 hover:bg-purple-200 border-purple-300 text-purple-700"
-                        onClick={() => selectSide('EVALUATOR')}
-                      >
-                        ⚖️ Judge
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
+                        Observers
+                      </h5>
+                      <div className="space-y-1">
+                        {users.filter(u => u.side === 'OBSERVER').map(user => (
+                          <div key={user.id} className="flex items-center space-x-1">
+                            <Avatar className="h-4 w-4">
+                              <AvatarFallback className="text-xs bg-blue-100 text-blue-700">
+                                {user.name?.substring(0, 2) || '??'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs truncate">{user.name}</span>
+                            {user.id === userId && <span className="text-xs text-blue-600">•</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {users.filter(u => u.side === 'EVALUATOR').length > 0 && (
+                  <Card className="bg-purple-50 border-purple-200">
+                    <CardContent className="p-2">
+                      <h5 className="font-medium text-xs text-purple-700 mb-2">⚖️ Evaluators</h5>
+                      <div className="space-y-1">
+                        {users.filter(u => u.side === 'EVALUATOR').map(user => (
+                          <div key={user.id} className="flex items-center space-x-1">
+                            <Avatar className="h-4 w-4">
+                              <AvatarFallback className="text-xs bg-purple-100 text-purple-700">
+                                {user.name?.substring(0, 2) || '??'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs truncate">{user.name}</span>
+                            {user.id === userId && <span className="text-xs text-purple-600">•</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
           </div>
         </div>
+        
         {/* Messages area - main content */}
         <div className="flex-1 flex flex-col min-h-0">
           {/* Video area */}

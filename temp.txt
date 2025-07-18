@@ -165,10 +165,12 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
         .on('presence', { event: 'join' }, ({ key, newPresences }) => {
           console.log('User joined:', key, newPresences);
           updateUsersPresence(newPresences);
+          checkForOpponent();
         })
         .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
           console.log('User left:', key, leftPresences);
           removeUserPresence(leftPresences);
+          checkForOpponent();
         })
         .on('presence', { event: 'sync' }, () => {
           console.log('Presence sync occurred');
@@ -351,10 +353,6 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
     // Replace the entire users list with the current presence state
     setUsers(allUsers);
     console.log('Updated users list:', allUsers);
-    
-    // Update opponent connection status
-    const opponents = allUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-    setOpponentConnected(opponents.length > 0);
   }
   
   const updateUsersPresence = (presences: any[]) => {
@@ -372,46 +370,27 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
       const existingUserIds = prevUsers.map(u => u.id);
       const newUsersToAdd = newUsers.filter(u => !existingUserIds.includes(u.id));
       const updatedExistingUsers = prevUsers.map(existingUser => {
-        const matchingNewUser = newUsers.find(nu => nu.id === existingUser.id);
+        const matchingNewUser = newUsers.find(newUser => newUser.id === existingUser.id);
         return matchingNewUser || existingUser;
       });
       
       const updatedUsers = [...updatedExistingUsers, ...newUsersToAdd];
       console.log('Updated users after presence update:', updatedUsers);
-      
-      // Update opponent connection status
-      const opponents = updatedUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-      setOpponentConnected(opponents.length > 0);
-      
       return updatedUsers;
     });
   };
 
   const removeUserPresence = (presences: any[]) => {
     const userIdsToRemove = presences.map(p => p.id || p.key);
-    setUsers(prevUsers => {
-      const filteredUsers = prevUsers.filter(user => !userIdsToRemove.includes(user.id));
-      
-      // Update opponent connection status
-      const opponents = filteredUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-      setOpponentConnected(opponents.length > 0);
-      
-      return filteredUsers;
-    });
+    setUsers(prevUsers => prevUsers.filter(user => !userIdsToRemove.includes(user.id)));
   };
 
   const updateUserSide = (userId: string, side: 'FOR' | 'AGAINST' | 'OBSERVER' | 'EVALUATOR') => {
-    setUsers(prevUsers => {
-      const updatedUsers = prevUsers.map(user => 
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
         user.id === userId ? { ...user, side } : user
-      );
-      
-      // Update opponent connection status
-      const opponents = updatedUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-      setOpponentConnected(opponents.length > 0);
-      
-      return updatedUsers;
-    });
+      )
+    );
   };
 
   // Message handling
@@ -504,7 +483,7 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
   };
 
   // Create a new room
-  const createRoom = async () => {
+  const createRoom = () => {
     setIsLoading(true);
     
     if (!topic.trim()) {
@@ -535,8 +514,6 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
       localStorage.setItem(`debate_room_${newRoomId}_host`, JSON.stringify({
         id: userId,
         name: userName,
-        topic: topic.trim(),
-        createdAt: Date.now()
       }));
       localStorage.setItem('current_debate_room_id', newRoomId);
       localStorage.setItem(`debate_room_${newRoomId}_messages`, JSON.stringify([]));
@@ -544,15 +521,12 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
       // Activate the room
       setIsRoomActive(true);
       setIsRoomHost(true);
+      // Don't auto-assign side - let user choose
       
       toast({
-        title: "Room Created Successfully!",
-        description: `Room ID: ${newRoomId}. Share this with participants to join.`,
+        title: "Room Created!",
+        description: `Your debate room has been created with ID: ${newRoomId}`,
       });
-      
-      // Immediately set up the real-time connection as host
-      console.log('Setting up real-time connection as host for room:', newRoomId);
-      
     } catch (error) {
       console.error('Error creating room:', error);
       toast({
@@ -566,7 +540,7 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
   };
 
   // Join an existing room
-  const joinRoom = async () => {
+  const joinRoom = () => {
     setIsLoading(true);
     
     if (!joinRoomId.trim()) {
@@ -611,6 +585,7 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
             setTopic(payload.payload.topic);
             setIsRoomActive(true);
             setIsRoomHost(false);
+            // Don't auto-assign side - let user choose
             
             // Store room data in localStorage for this user
             const roomDataToStore: DebateRoom = {
@@ -621,14 +596,22 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
               status: 'active'
             };
             localStorage.setItem(`debate_room_${roomIdToJoin}`, JSON.stringify(roomDataToStore));
+            
+            // Register as an opponent
+            const opponentData = {
+              id: userId,
+              name: userName,
+              side: null // Don't auto-assign side
+            };
+            localStorage.setItem(`debate_room_${roomIdToJoin}_opponent`, JSON.stringify(opponentData));
             localStorage.setItem('current_debate_room_id', roomIdToJoin);
             
             toast({
-              title: "Joined Room Successfully",
-              description: `Welcome to the debate: "${payload.payload.topic}"`,
+              title: "Joined Room",
+              description: `You've joined the debate room: ${roomIdToJoin}`,
             });
             
-            // Clean up
+            // Unsubscribe from this temporary channel as we'll create a proper one when room is active
             roomChannel.unsubscribe();
             setIsLoading(false);
           }
@@ -648,44 +631,48 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
               console.log('Found room data in localStorage');
               const room: DebateRoom = JSON.parse(roomData);
               
-              // Clear the timeout since we found the room
-              if (joinTimeout) {
-                clearTimeout(joinTimeout);
-              }
-              
               // Set room properties
               setRoomId(roomIdToJoin);
               setTopic(room.topic);
               setIsRoomActive(true);
               setIsRoomHost(false);
+              // Don't auto-assign side - let user choose
               
+              // Register as an opponent
+              const opponentData = {
+                id: userId,
+                name: userName,
+                side: null // Don't auto-assign side
+              };
+              
+              localStorage.setItem(`debate_room_${roomIdToJoin}_opponent`, JSON.stringify(opponentData));
               localStorage.setItem('current_debate_room_id', roomIdToJoin);
               
               toast({
-                title: "Joined Room Successfully",
-                description: `Welcome to the debate: "${room.topic}"`,
+                title: "Joined Room",
+                description: `You've joined the debate room: ${roomIdToJoin}`,
               });
               
-              // Unsubscribe from this temporary channel as we'll create a proper one when room is active
               roomChannel.unsubscribe();
               setIsLoading(false);
+              return;
             }
+            
+            // Set a timeout to check if we received room info
+            joinTimeout = setTimeout(() => {
+              if (!isRoomActive) {
+                console.log('Timed out waiting for room info');
+                roomChannel.unsubscribe();
+                toast({
+                  title: "Room Not Found",
+                  description: "The room ID you entered does not exist or is no longer active",
+                  variant: "destructive",
+                });
+                setIsLoading(false);
+              }
+            }, 3000);
           }
         });
-      
-      // Set a timeout to handle case where no room info is received
-      joinTimeout = setTimeout(() => {
-        console.log('Timed out waiting for room info');
-        roomChannel.unsubscribe();
-        
-        toast({
-          title: "Room Not Found",
-          description: "Could not find the room. Please check the room ID and try again.",
-          variant: "destructive",
-        });
-        
-        setIsLoading(false);
-      }, 5000); // Wait 5 seconds for room info
       
     } catch (error) {
       console.error('Error joining room:', error);
@@ -809,18 +796,12 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
         payload: { userId, side, userName },
       });
       
-      // Update local users list immediately
-      setUsers(prevUsers => {
-        const updatedUsers = prevUsers.map(user => 
+      // Update local users list
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
           user.id === userId ? { ...user, side } : user
-        );
-        
-        // Update opponent connection status
-        const opponents = updatedUsers.filter(u => u.id !== userId && u.side !== null && u.side !== 'OBSERVER' && u.side !== 'EVALUATOR');
-        setOpponentConnected(opponents.length > 0);
-        
-        return updatedUsers;
-      });
+        )
+      );
       
       const sideText = side === 'OBSERVER' ? 'as an observer' : 
                        side === 'EVALUATOR' ? 'as an evaluator' : 
@@ -846,28 +827,6 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
       title: "Role Reset",
       description: "Please select your role again",
     });
-  };
-  
-  // Force refresh participants list
-  const refreshParticipants = () => {
-    console.log('Manual refresh triggered');
-    if (roomChannelRef.current) {
-      const state = roomChannelRef.current.presenceState();
-      const allUsers = Object.values(state).flat() as any[];
-      console.log('Manual participants refresh:', allUsers);
-      updateAllUsers(allUsers);
-      
-      toast({
-        title: "Participants Refreshed",
-        description: `${allUsers.length} participants in room`,
-      });
-    } else {
-      toast({
-        title: "Not Connected",
-        description: "No active room connection to refresh",
-        variant: "destructive",
-      });
-    }
   };
   
   // End the debate
@@ -1292,164 +1251,94 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
   // Room creation/join UI
   if (!isRoomActive) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl shadow-2xl border-0">
-          <CardHeader className="text-center pb-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
-            <CardTitle className="text-3xl font-bold mb-2">🎯 Human vs Human Debate</CardTitle>
-            <p className="text-blue-100 text-lg">Engage in real-time debates with other participants</p>
-          </CardHeader>
-          
-          <CardContent className="p-8">
-            {/* Navigation */}
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex space-x-3">
-                {onViewHistory && (
-                  <Button variant="outline" onClick={onViewHistory} size="sm" className="flex items-center gap-2">
-                    📚 View History
-                  </Button>
-                )}
-                <Button variant="outline" onClick={onBack} size="sm" className="flex items-center gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </Button>
-              </div>
-            </div>
+      <div className="max-w-md mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Human vs Human Debate Room</h2>
+          <div className="flex space-x-2">
+            {onViewHistory && (
+              <Button variant="outline" onClick={onViewHistory} size="sm">
+                📚 History
+              </Button>
+            )}
+            <Button variant="outline" onClick={onBack}>Back</Button>
+          </div>
+        </div>
 
-            {/* Create/Join Toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-1 mb-8">
-              <Button 
-                variant={isCreatingRoom ? "default" : "ghost"} 
-                onClick={() => setIsCreatingRoom(true)}
-                className="flex-1 rounded-md"
-              >
-                🏗️ Create Room
-              </Button>
-              <Button 
-                variant={!isCreatingRoom ? "default" : "ghost"} 
-                onClick={() => setIsCreatingRoom(false)}
-                className="flex-1 rounded-md"
-              >
-                🚪 Join Room
-              </Button>
-            </div>
-            
-            <div className="space-y-6">
-              {/* User Name */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Your Display Name</label>
+        <div className="flex space-x-4 mb-8">
+          <Button 
+            variant={isCreatingRoom ? "default" : "outline"} 
+            onClick={() => setIsCreatingRoom(true)}
+            className="flex-1"
+          >
+            Create Room
+          </Button>
+          <Button 
+            variant={!isCreatingRoom ? "default" : "outline"} 
+            onClick={() => setIsCreatingRoom(false)}
+            className="flex-1"
+          >
+            Join Room
+          </Button>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-1 block">Your Name</label>
+            <Input 
+              value={userName} 
+              onChange={(e) => setUserName(e.target.value)} 
+              placeholder="Enter your name" 
+            />
+          </div>
+
+          {isCreatingRoom ? (
+            <>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Room ID (Share with opponent)</label>
+                <div className="flex">
+                  <Input value={roomId} disabled className="flex-1" />
+                  <Button variant="outline" className="ml-2" onClick={() => setRoomId(generateRoomId())} title="Generate new room ID">
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Debate Topic</label>
                 <Input 
-                  value={userName} 
-                  onChange={(e) => setUserName(e.target.value)} 
-                  placeholder="Enter your name (e.g., John Doe)" 
-                  className="h-12 text-lg"
+                  value={topic} 
+                  onChange={(e) => setTopic(e.target.value)} 
+                  placeholder="Enter debate topic" 
                 />
               </div>
-
-              {isCreatingRoom ? (
-                <div className="space-y-6">
-                  {/* Room ID */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Room ID (Share with participants)</label>
-                    <div className="flex gap-3">
-                      <Input value={roomId} disabled className="flex-1 h-12 text-lg font-mono tracking-wider" />
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setRoomId(generateRoomId())} 
-                        title="Generate new room ID"
-                        className="px-4"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => {
-                          navigator.clipboard.writeText(roomId);
-                          toast({ title: "Room ID copied to clipboard!" });
-                        }}
-                        title="Copy room ID"
-                        className="px-4"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {/* Debate Topic */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Debate Topic</label>
-                    <Textarea 
-                      value={topic} 
-                      onChange={(e) => setTopic(e.target.value)} 
-                      placeholder="Enter a clear debate topic (e.g., Should AI replace human teachers in education?)" 
-                      className="min-h-[100px] text-lg"
-                    />
-                  </div>
-                  
-                  {/* Create Button */}
-                  <Button 
-                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" 
-                    onClick={createRoom} 
-                    disabled={isLoading || !userName.trim() || !topic.trim()}
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                        Creating Room...
-                      </>
-                    ) : (
-                      <>
-                        🚀 Create Debate Room
-                      </>
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Join Room ID */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Enter Room ID</label>
-                    <Input 
-                      value={joinRoomId} 
-                      onChange={(e) => setJoinRoomId(e.target.value.toUpperCase())} 
-                      placeholder="Enter 6-character room ID (e.g., ABC123)" 
-                      maxLength={6}
-                      className="h-12 text-lg font-mono tracking-wider text-center"
-                    />
-                  </div>
-                  
-                  {/* Join Button */}
-                  <Button 
-                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700" 
-                    onClick={joinRoom}
-                    disabled={isLoading || !userName.trim() || joinRoomId.length !== 6}
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                        Joining Room...
-                      </>
-                    ) : (
-                      <>
-                        🎯 Join Debate Room
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
-            
-            {/* Help Section */}
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h4 className="font-semibold text-blue-800 mb-2">How it works:</h4>
-              <ul className="text-sm text-blue-700 space-y-1">
-                <li>• <strong>Create Room:</strong> Set up a debate topic and share the room ID</li>
-                <li>• <strong>Join Room:</strong> Enter a room ID to participate in existing debates</li>
-                <li>• <strong>Choose Role:</strong> Select FOR, AGAINST, OBSERVER, or EVALUATOR</li>
-                <li>• <strong>Real-time:</strong> Chat and video with other participants</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+              <Button 
+                className="w-full" 
+                onClick={createRoom} 
+                disabled={isLoading}
+              >
+                {isLoading ? "Creating..." : "Create Debate Room"}
+              </Button>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Enter Room ID</label>
+                <Input 
+                  value={joinRoomId} 
+                  onChange={(e) => setJoinRoomId(e.target.value.toUpperCase())} 
+                  placeholder="Enter 6-character room ID" 
+                  maxLength={6}
+                />
+              </div>
+              <Button 
+                className="w-full" 
+                onClick={joinRoom}
+                disabled={isLoading}
+              >
+                {isLoading ? "Joining..." : "Join Debate Room"}
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     );
   }
@@ -1523,7 +1412,26 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
               variant="outline" 
               size="sm"
               title="Refresh Participants"
-              onClick={refreshParticipants}
+              onClick={() => {
+                if (roomChannelRef.current) {
+                  // Re-track our own presence
+                  roomChannelRef.current.track({
+                    id: userId,
+                    name: userName,
+                    side: mySide,
+                    isActive: true,
+                    lastSeen: Date.now(),
+                  });
+                  
+                  // Force sync presence
+                  setTimeout(() => {
+                    const state = roomChannelRef.current.presenceState();
+                    console.log('Current presence state:', state);
+                    const allUsers = Object.values(state).flat() as any[];
+                    updateAllUsers(allUsers);
+                  }, 500);
+                }
+              }}
               className="hidden sm:flex"
             >
               <RefreshCw className="h-4 w-4" />
@@ -1659,8 +1567,18 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={refreshParticipants}
-                title="Refresh Participants"
+                onClick={() => {
+                  // Refresh presence data
+                  if (roomChannelRef.current) {
+                    const state = roomChannelRef.current.presenceState();
+                    const allUsers = Object.values(state).flat() as any[];
+                    updateAllUsers(allUsers);
+                    toast({
+                      title: "Refreshed",
+                      description: `${allUsers.length} users in room`,
+                    });
+                  }
+                }}
               >
                 Refresh
               </Button>
@@ -1675,12 +1593,6 @@ const HumanDebateRoom: React.FC<HumanDebateRoomProps> = ({ onBack, onViewHistory
                   <div className="flex justify-between">
                     <span className="font-medium">Room:</span>
                     <span className="font-mono">{roomId}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Topic:</span>
-                    <span className="text-right ml-2 flex-1 break-words">
-                      {topic || 'Loading...'}
-                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Total Users:</span>
