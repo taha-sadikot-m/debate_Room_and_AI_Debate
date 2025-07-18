@@ -18,6 +18,9 @@ interface StudentDashboardProps {
   onViewTokens: () => void;
   onPublicSpeaking: () => void;
   onDebatesHub: () => void;
+  onEnhancedTopicSelection?: () => void;
+  onAdvancedTopicManager?: () => void;
+  onRealTimeDebate?: () => void;
 }
 
 const StudentDashboard = ({ 
@@ -31,7 +34,10 @@ const StudentDashboard = ({
   onResources, 
   onViewTokens,
   onPublicSpeaking,
-  onDebatesHub
+  onDebatesHub,
+  onEnhancedTopicSelection,
+  onAdvancedTopicManager,
+  onRealTimeDebate
 }: StudentDashboardProps) => {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -72,6 +78,9 @@ const StudentDashboard = ({
         onResources={onResources}
         onPublicSpeaking={onPublicSpeaking}
         onDebatesHub={onDebatesHub}
+        onEnhancedTopicSelection={onEnhancedTopicSelection}
+        onAdvancedTopicManager={onAdvancedTopicManager}
+        onRealTimeDebate={onRealTimeDebate}
       />
 
       {/* Quick Tips Section */}

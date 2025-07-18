@@ -19,6 +19,21 @@
 
   <body>
     <div id="root"></div>
+    <!-- Polyfills for WebRTC -->
+    <script>
+      // Global object polyfill
+      if (typeof window !== 'undefined' && typeof window.global === 'undefined') {
+        window.global = window;
+      }
+      
+      // Process polyfill
+      if (typeof window !== 'undefined' && typeof window.process === 'undefined') {
+        window.process = {
+          env: { DEBUG: undefined },
+          nextTick: function (fn) { setTimeout(fn, 0); }
+        };
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

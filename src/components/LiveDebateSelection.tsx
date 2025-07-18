@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +6,14 @@ import { Users, Globe, Shield, ArrowLeft, Target, Trophy } from 'lucide-react';
 import LanguageSelection from './LanguageSelection';
 import DifficultySelection from './DifficultySelection';
 import LiveDebateRoom from './LiveDebateRoom';
-import { Topic } from '@/data/topics';
+import { LiveDebateTopic } from '@/data/liveDebateTopics';
+
+// Add TypeScript declaration for the window object to include selectedDebateTopic
+declare global {
+  interface Window {
+    selectedDebateTopic?: LiveDebateTopic;
+  }
+}
 
 interface OnlineUser {
   id: string;
@@ -17,6 +23,15 @@ interface OnlineUser {
   tokens: number;
   country: string;
   status: 'available' | 'in-debate' | 'away';
+}
+
+interface Team {
+  id: string;
+  name: string;
+  members: OnlineUser[];
+  rating: number;
+  wins: number;
+  losses: number;
 }
 
 interface LiveDebateSelectionProps {
@@ -47,10 +62,17 @@ const LiveDebateSelection = ({ onFormatSelect, onBack }: LiveDebateSelectionProp
     setCurrentStep('room');
   };
 
-  const handleStartDebate = (topic: Topic, opponent: OnlineUser) => {
+  const handleStartDebate = (topic: LiveDebateTopic, opponent?: OnlineUser, team?: Team) => {
     // Here you would typically navigate to the actual debate room
-    console.log('Starting debate:', { topic, opponent, format: selectedFormat, language: selectedLanguage });
-    onFormatSelect(selectedFormat!, selectedLanguage);
+    console.log('Starting debate:', { topic, opponent, team, format: selectedFormat, language: selectedLanguage });
+    
+    // Store the topic in window object to preserve it across navigation
+    window.selectedDebateTopic = topic;
+    
+    // Make sure to add a delay before navigating to ensure the topic is stored
+    setTimeout(() => {
+      onFormatSelect(selectedFormat!, selectedLanguage);
+    }, 100);
   };
 
   const handleBackToFormats = () => {
@@ -71,6 +93,7 @@ const LiveDebateSelection = ({ onFormatSelect, onBack }: LiveDebateSelectionProp
       <LiveDebateRoom
         difficulty={selectedDifficulty}
         theme={selectedTheme}
+        format={selectedFormat!}
         onBack={handleBackToDifficulty}
         onStartDebate={handleStartDebate}
       />

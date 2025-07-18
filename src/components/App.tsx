@@ -4,6 +4,7 @@ import Navigation from '@/components/Navigation';
 import ViewManager from '@/components/ViewManager';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
 import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
+import '@/utils/devAuthHelper'; // Import dev auth helper for development
 
 interface DebateConfig {
   topic: string;

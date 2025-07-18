@@ -1,4 +1,5 @@
 
+import React from 'react';
 import AuthenticatedApp from '@/components/AuthenticatedApp';
 
 const Index = () => {

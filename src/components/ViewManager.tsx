@@ -1,4 +1,4 @@
-
+import React from 'react';
 import DashboardView from '@/components/views/DashboardView';
 import MunModeView from '@/components/views/MunModeView';
 import DebateFlowViews from '@/components/views/DebateFlowViews';
@@ -10,6 +10,14 @@ import InstantDebateTest from '@/components/InstantDebateTest';
 import InstantDebateEvaluation from '@/components/InstantDebateEvaluation';
 import InstantDebateHistory from '@/components/InstantDebateHistory';
 import InstantDebateViewer from '@/components/InstantDebateViewer';
+import EnhancedTopicSelection from '@/components/EnhancedTopicSelection';
+import AdvancedTopicManager from '@/components/AdvancedTopicManager';
+import LiveDebateRoomV3 from '@/components/LiveDebateRoomV3';
+import RealTimeDebateRoom from '@/components/RealTimeDebateRoom';
+import HumanDebateRoom from '@/components/HumanDebateRoom';
+import HumanDebateHistory from '@/components/HumanDebateHistory';
+import HumanDebateViewer from '@/components/HumanDebateViewer';
+import { LiveDebateTopic } from '@/data/liveDebateTopics';
 
 interface Topic {
   id: string;
@@ -35,15 +43,18 @@ interface ViewManagerProps {
   currentView: string;
   userRole: 'student' | 'teacher';
   userTokens: number;
-  selectedTopic: Topic | null;
-  selectedDifficulty: 'Easy' | 'Medium' | 'Hard';
-  selectedTheme: string;
+  selectedTopic: Topic | LiveDebateTopic | null;
+  selectedDifficulty: 'Easy' | 'Medium' | 'Hard' | null;
+  selectedTheme: string | null;
   selectedCommittee: any;
   selectedLiveSession: any;
-  debateType: 'ai' | '1v1' | 'mun';
+  debateType: 'instant' | 'live' | 'mun' | null;
   selectedProcedureType: 'UNA-USA' | 'Indian Parliamentary' | null;
   selectedLanguage: string;
   selectedDebateFormat: '1v1' | '3v3';
+  selectedOpponent: any;
+  selectedTeam: any;
+  selectedDebateRoomId?: string; // Added room ID
   instantDebateConfig: DebateConfig | null;
   currentDebateData?: {
     config: DebateConfig;
@@ -79,6 +90,9 @@ interface ViewManagerProps {
     handleInstantDebateHistory: () => void;
     handleStartNewDebate: () => void;
     handleViewDebate: (debate: any) => void;
+    handleHumanDebateHistory: () => void;
+    handleViewHumanDebate: (debate: any) => void;
+    handleLiveDebateStart?: (topic: LiveDebateTopic, opponent?: any, team?: any, roomId?: string) => void;
   };
 }
 
@@ -95,6 +109,9 @@ const ViewManager = ({
   selectedProcedureType,
   selectedLanguage,
   selectedDebateFormat,
+  selectedOpponent,
+  selectedTeam,
+  selectedDebateRoomId,
   instantDebateConfig,
   currentDebateData,
   selectedDebateRecord,
@@ -119,6 +136,25 @@ const ViewManager = ({
           <InstantDebateSetup
             onStartDebate={handlers.handleInstantDebateStart}
             onBack={handlers.handleBackToDashboard}
+          />
+        );
+
+      case 'enhanced-topic-selection':
+        return (
+          <EnhancedTopicSelection
+            onStartDebate={handlers.handleInstantDebateStart}
+            onBack={handlers.handleBackToDashboard}
+          />
+        );
+
+      case 'advanced-topic-manager':
+        return (
+          <AdvancedTopicManager
+            onTopicSelect={(topic, category) => {
+              // Handle topic selection for instant debates
+              console.log('Topic selected:', topic, category);
+            }}
+            onCreateDebate={handlers.handleInstantDebateStart}
           />
         );
 
@@ -242,7 +278,101 @@ const ViewManager = ({
           />
         );
 
+      case 'live-debate-active':
+        if (!selectedTopic) {
+          console.error('No topic selected for live debate, redirecting to selection');
+          // Automatically redirect back to selection if no topic
+          setTimeout(() => {
+            // Use handlers.handleBackToDashboard as a fallback if live debate handler doesn't exist
+            if ('handleBackToLiveDebateSelection' in handlers) {
+              (handlers as any).handleBackToLiveDebateSelection();
+            } else {
+              handlers.handleBackToDashboard();
+            }
+          }, 100);
+          return (
+            <div className="max-w-4xl mx-auto p-6 text-center">
+              <h2 className="text-xl font-semibold mb-4">Redirecting...</h2>
+              <p className="text-gray-600">No topic selected. Returning to topic selection.</p>
+            </div>
+          );
+        }
+        return (
+          <LiveDebateRoomV3
+            topic={selectedTopic}
+            format={selectedDebateFormat}
+            opponent={selectedOpponent}
+            team={selectedTeam}
+            language={selectedLanguage}
+            roomId={selectedDebateRoomId}
+            onBack={() => {
+              // Use handlers.handleBackToDashboard as a fallback if live debate handler doesn't exist
+              if ('handleBackToLiveDebateSelection' in handlers) {
+                (handlers as any).handleBackToLiveDebateSelection();
+              } else {
+                handlers.handleBackToDashboard();
+              }
+            }}
+            onComplete={(result) => {
+              // Use handlers.handleBackToDashboard as a fallback if live debate handler doesn't exist
+              if ('handleLiveDebateComplete' in handlers) {
+                (handlers as any).handleLiveDebateComplete(result);
+              } else {
+                console.log('Live debate complete:', result);
+                handlers.handleBackToDashboard();
+              }
+            }}
+          />
+        );
+
       case 'live-debate-selection':
+        return (
+          <RealTimeDebateRoom
+            onBack={handlers.handleBackToDashboard}
+          />
+        );
+        
+      case 'real-time-debate-room':
+        return (
+          <HumanDebateRoom
+            onBack={handlers.handleBackToDashboard}
+            onViewHistory={handlers.handleHumanDebateHistory}
+          />
+        );
+
+      case 'human-debate-history':
+        return (
+          <HumanDebateHistory
+            onBack={handlers.handleBackToDashboard}
+            onNewDebate={handlers.handleCreateDebateRoom}
+            onViewDebate={handlers.handleViewHumanDebate}
+          />
+        );
+
+      case 'human-debate-viewer':
+        if (!selectedDebateRecord) {
+          return (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold mb-2">No Debate Selected</h2>
+                <p className="text-gray-600 mb-4">Please select a debate to view.</p>
+                <button
+                  onClick={handlers.handleHumanDebateHistory}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Back to History
+                </button>
+              </div>
+            </div>
+          );
+        }
+        return (
+          <HumanDebateViewer
+            debate={selectedDebateRecord}
+            onBack={handlers.handleHumanDebateHistory}
+          />
+        );
+        
       case 'create-debate-room':
       case 'events':
       case 'debates-hub':

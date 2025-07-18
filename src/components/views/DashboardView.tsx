@@ -1,4 +1,5 @@
 
+import React from 'react';
 import StudentDashboard from '@/components/StudentDashboard';
 import TeacherDashboard from '@/components/TeacherDashboard';
 
@@ -16,6 +17,9 @@ interface DashboardViewProps {
     handleViewTokens: () => void;
     handlePublicSpeaking: () => void;
     handleDebatesHub: () => void;
+    handleEnhancedTopicSelection: () => void;
+    handleAdvancedTopicManager: () => void;
+    handleRealTimeDebate: () => void;
   };
 }
 
@@ -33,6 +37,9 @@ const DashboardView = ({ userRole, userTokens, handlers }: DashboardViewProps) =
       onViewTokens={handlers.handleViewTokens}
       onPublicSpeaking={handlers.handlePublicSpeaking}
       onDebatesHub={handlers.handleDebatesHub}
+      onEnhancedTopicSelection={handlers.handleEnhancedTopicSelection}
+      onAdvancedTopicManager={handlers.handleAdvancedTopicManager}
+      onRealTimeDebate={handlers.handleRealTimeDebate}
     />
   ) : (
     <TeacherDashboard />

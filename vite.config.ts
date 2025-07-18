@@ -27,12 +27,21 @@ export default defineConfig(({ mode }) => ({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          webrtc: ['simple-peer', 'buffer'],
+        },
       },
     },
+  },
+  optimizeDeps: {
+    include: ['buffer'],
   },
   define: {
     // Ensure proper environment variables
     'process.env.NODE_ENV': JSON.stringify(mode),
+    __DEV__: mode === 'development',
+    global: 'globalThis',
   },
 }));

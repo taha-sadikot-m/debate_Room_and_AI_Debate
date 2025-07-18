@@ -81,20 +81,21 @@ const TopicManagement = () => {
     const { data: { user } } = await supabase.auth.getUser();
 
     const { error } = await supabase.from('debate_topics').insert({
-      title: values.topicName.trim(),
+      topic_name: values.topicName.trim(),
+      category: values.theme, // Using theme as category since that's what's in the form
       theme: values.theme,
-      difficulty: values.difficulty,
       description: values.description?.trim() || null,
-      time_estimate: values.timeEstimate,
-      status: 'approved',
-      created_by: user?.id
+      student_id: user?.id || null, // Allow null for demo/development
+      status: 'approved' // Since this is admin adding, approve immediately
     });
 
     if (error) {
+      console.error('Error adding topic:', error);
       toast({ title: "Error", description: "Failed to add topic", variant: "destructive" });
     } else {
-      toast({ title: "Success", description: "Topic added" });
+      toast({ title: "Success", description: "Topic added successfully" });
       addTopicForm.reset();
+      await fetchPendingTopics(); // Refresh the list
     }
 
     setIsAddingTopic(false);

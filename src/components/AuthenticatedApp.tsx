@@ -1,9 +1,10 @@
-
+import React from 'react';
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import ViewManager from '@/components/ViewManager';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
 import { MunCommittee, LiveMunSession } from '@/data/munCommittees';
+import { LiveDebateTopic } from '@/data/liveDebateTopics';
 
 interface DebateConfig {
   topic: string;
@@ -33,7 +34,7 @@ const AuthenticatedApp = () => {
   const [userRole, setUserRole] = useState<'student' | 'teacher'>('student');
   const [userTokens, setUserTokens] = useState(156);
   const [currentView, setCurrentView] = useState<string>('dashboard');
-  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<Topic | LiveDebateTopic | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Easy');
   const [selectedTheme, setSelectedTheme] = useState<string>('');
   const [selectedCommittee, setSelectedCommittee] = useState<MunCommittee | null>(null);
@@ -42,6 +43,9 @@ const AuthenticatedApp = () => {
   const [selectedProcedureType, setSelectedProcedureType] = useState<'UNA-USA' | 'Indian Parliamentary' | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
   const [selectedDebateFormat, setSelectedDebateFormat] = useState<'1v1' | '3v3'>('1v1');
+  const [selectedOpponent, setSelectedOpponent] = useState<any>(null);
+  const [selectedTeam, setSelectedTeam] = useState<any>(null);
+  const [selectedDebateRoomId, setSelectedDebateRoomId] = useState<string | undefined>(undefined);
   const [instantDebateConfig, setInstantDebateConfig] = useState<DebateConfig | null>(null);
   const [currentDebateData, setCurrentDebateData] = useState<{config: DebateConfig; messages: any[]} | null>(null);
   const [selectedDebateRecord, setSelectedDebateRecord] = useState<any>(null);
@@ -58,6 +62,9 @@ const AuthenticatedApp = () => {
     setUserTokens,
     setSelectedLanguage,
     setSelectedDebateFormat,
+    setSelectedOpponent,
+    setSelectedTeam,
+    setSelectedDebateRoomId,
     setInstantDebateConfig,
     setCurrentDebateData,
     setSelectedDebateRecord
@@ -92,9 +99,12 @@ const AuthenticatedApp = () => {
           selectedProcedureType={selectedProcedureType}
           selectedLanguage={selectedLanguage}
           selectedDebateFormat={selectedDebateFormat}
+          selectedOpponent={selectedOpponent}
+          selectedTeam={selectedTeam}
           instantDebateConfig={instantDebateConfig}
           currentDebateData={currentDebateData}
           selectedDebateRecord={selectedDebateRecord}
+          selectedDebateRoomId={selectedDebateRoomId}
           handlers={handlers}
         />
       </main>
